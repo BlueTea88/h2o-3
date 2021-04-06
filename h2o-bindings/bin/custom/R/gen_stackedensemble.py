@@ -1,6 +1,5 @@
 rest_api_version = 99
 
-
 def update_param(name, param):
     if name == 'metalearner_params':
         param['default_value'] = None

@@ -270,7 +270,7 @@ def algo_to_modelname(algo):
     if algo == "psvm": return "Support Vector Machine"
     if algo == "gam": return "Generalized Additive Model"
     if algo == "targetencoder": return "Target Encoder"
-    if algo == "gam": return "General Additive Model"
+    if algo == "infogram": return "InfoGram Estimator"
     return algo
 
 

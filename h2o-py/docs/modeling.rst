@@ -37,6 +37,12 @@ Supervised
     :show-inheritance:
     :members:
 
+:mod:`H2OInfoGramEstimator`
+---------------------------
+.. autoclass:: h2o.estimators.infogram.H2OInfoGramEstimator
+    :show-inheritance:
+    :members:
+
 :mod:`H2ONaiveBayesEstimator`
 -----------------------------
 .. autoclass:: h2o.estimators.naive_bayes.H2ONaiveBayesEstimator
