@@ -37,6 +37,12 @@ Supervised
     :show-inheritance:
     :members:
 
+:mod:`H2OMaxRGLMEstimator`
+--------------------------
+.. autoclass:: h2o.estimators.maxrglm.H2OMaxRGLMEstimator
+    :show-inheritance:
+    :members:
+
 :mod:`H2ONaiveBayesEstimator`
 -----------------------------
 .. autoclass:: h2o.estimators.naive_bayes.H2ONaiveBayesEstimator

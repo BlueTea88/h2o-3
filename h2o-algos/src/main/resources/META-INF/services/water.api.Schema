@@ -98,3 +98,7 @@ hex.schemas.RuleFitModelV3
 hex.schemas.RuleFitModelV3$RuleFitModelOutputV3
 hex.schemas.RuleFitV3$RuleFitParametersV3
 hex.schemas.RuleFitV3
+hex.schemas.MaxRGLMModelV3
+hex.schemas.MaxRGLMModelV3$MaxRGLMModelOutputV3
+hex.schemas.MaxRGLMV3
+hex.schemas.MaxRGLMV3$MaxRGLMParametersV3

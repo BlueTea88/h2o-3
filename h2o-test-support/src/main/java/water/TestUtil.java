@@ -183,6 +183,13 @@ public class TestUtil extends Iced {
         assertEquals(expected[i], actual[i], threshold*Math.min(Math.abs(expected[i]),Math.abs(actual[i])));
     }
   }
+  
+  public static<E extends Comparable<E>> void assertEqualArrays(E[] expected, E[] actual) {
+    int arrayLen = expected.length;
+    assertEquals(arrayLen, actual.length);
+    for (int index=0; index < arrayLen; index++)
+      assertTrue(expected[index].compareTo(actual[index])==0);
+  }
 
   public static void checkDoubleArrays(double[][] expected, double[][] actual, double threshold) {
     int len1 = expected.length;
