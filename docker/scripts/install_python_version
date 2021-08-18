@@ -43,11 +43,11 @@ for python_version in "${array[@]}"; do
   rm -rf /var/cache/apt/*
 
   echo "###### Installing pip for Python ${python_version} ######"
-  if [[ ${major} == "2" ]]
+  if [[ ${major} == "2" ]] || [[ ${python_version} == "3.5" ]]
   then
     curl https://bootstrap.pypa.io/pip/${python_version}/get-pip.py --output get-pip.py
     python${python_version} get-pip.py
-  elif [[ ${python_version} == "3.8" ]] || [[ ${python_version} == "3.5" ]]
+  elif [[ ${python_version} == "3.8" ]]
   then
     python${python_version} -m ensurepip --upgrade
   else
