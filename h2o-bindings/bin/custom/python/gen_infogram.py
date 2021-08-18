@@ -1,14 +1,7 @@
 rest_api_version = 3  # type: int
 
 def update_param(name, param):
-    if name == 'distribution':
-        param['values'] = ['AUTO', 'bernoulli', 'multinomial', 'ordinal']
-        return param
-    elif name == 'model_algorithm_params':
-        param['type'] = 'KeyValue'
-        param['default_value'] = None
-        return param
-    elif name == 'infogram_algorithm_params':
+    if name == 'infogram_algorithm_params':
         param['type'] = 'KeyValue'
         param['default_value'] = None
         return param
@@ -165,30 +158,7 @@ if {pname} is not None and {pname} != "":
 else:
     self._parms["{sname}"] = None
 """
-    ),
-
-    model_algorithm_params=dict(
-        getter="""
-if self._parms.get("{sname}") != None:
-    model_algorithm_params_dict =  ast.literal_eval(self._parms.get("{sname}"))
-    for k in model_algorithm_params_dict:
-        if len(model_algorithm_params_dict[k]) == 1: #single parameter
-            model_algorithm_params_dict[k] = model_algorithm_params_dict[k][0]
-    return model_algorithm_params_dict
-else:
-    return self._parms.get("{sname}")
-""",
-        setter="""
-assert_is_type({pname}, None, {ptype})
-if {pname} is not None and {pname} != "":
-    for k in {pname}:
-        if ("[" and "]") not in str(model_algorithm_params[k]):
-            model_algorithm_params[k] = [model_algorithm_params[k]]
-    self._parms["{sname}"] = str(json.dumps({pname}))
-else:
-    self._parms["{sname}"] = None
-"""
-    ),
+    )
 )
 
 doc = dict(

@@ -36,7 +36,9 @@
 #'        the dataset; giving an observation a relative weight of 2 is equivalent to repeating that row twice. Negative
 #'        weights are not allowed. Note: Weights are per-row observation weights and do not increase the size of the
 #'        data frame. This is typically the number of times a row is repeated, but non-integer values are supported as
-#'        well. During training, rows with higher weights matter more, due to the larger loss function pre-factor.
+#'        well. During training, rows with higher weights matter more, due to the larger loss function pre-factor. If
+#'        you set weight = 0 for a row, the returned prediction frame at that row is zero and this is incorrect. To get
+#'        an accurate prediction, remove all rows with weight == 0.
 #' @param standardize \code{Logical}. Standardize numeric columns to have zero mean and unit variance Defaults to FALSE.
 #' @param distribution Distribution function Must be one of: "AUTO", "bernoulli", "multinomial", "gaussian", "poisson", "gamma",
 #'        "tweedie", "laplace", "quantile", "huber". Defaults to AUTO.
@@ -65,13 +67,6 @@
 #' @param infogram_algorithm Machine learning algorithm chosen to build the infogram.  AUTO default to GBM Must be one of: "AUTO",
 #'        "deeplearning", "drf", "gbm", "glm", "xgboost". Defaults to gbm.
 #' @param infogram_algorithm_params parameters specified to the chosen algorithm can be passed to infogram using algorithm_params
-#' @param model_algorithm Machine learning algorithm chosen to build the final model.  Default to AUTO.  If you do not
-#'        specifymodel_algorithm_params, this will turn off final model building.  If you want to build a final model,
-#'        make sure you specify model_algorithm not to AUTO or specify model_algorithm_params.  If you
-#'        specifymodel_algorithm_params but did not specify model_algorithm, a final gbm will be built with
-#'        parametersspecified in model_algorithm_params. Must be one of: "AUTO", "deeplearning", "drf", "gbm", "glm",
-#'        "xgboost". Defaults to AUTO.
-#' @param model_algorithm_params parameters specified to the chosen final algorithm
 #' @param sensitive_attributes predictors that are to be excluded from model due to them being discriminatory or inappropriate for whatever
 #'        reason.
 #' @param conditional_info_threshold conditional information threshold between 0 and 1 that is used to decide whether a predictor's conditional
@@ -79,8 +74,6 @@
 #' @param varimp_threshold variable importance threshold between 0 and 1 that is used to decide whether a predictor's relevance level is
 #'        high enough.  Default to 0.1 Defaults to 0.1.
 #' @param data_fraction fraction of training frame to use to build the infogram model.  Default to 1.0 Defaults to 1.
-#' @param nparallelism number of models to build in parallel.  Default to 0.0 which is adaptive to the system capability Defaults to
-#'        0.
 #' @param ntop number of top k variables to consider based on the varimp.  Default to 0.0 which is to consider all predictors
 #'        Defaults to 50.
 #' @param compute_p_values \code{Logical}. If true will calculate the p-value. Default to false Defaults to FALSE.
@@ -126,13 +119,10 @@ h2o.infogram <- function(x,
                          auc_type = c("AUTO", "NONE", "MACRO_OVR", "WEIGHTED_OVR", "MACRO_OVO", "WEIGHTED_OVO"),
                          infogram_algorithm = c("AUTO", "deeplearning", "drf", "gbm", "glm", "xgboost"),
                          infogram_algorithm_params = NULL,
-                         model_algorithm = c("AUTO", "deeplearning", "drf", "gbm", "glm", "xgboost"),
-                         model_algorithm_params = NULL,
                          sensitive_attributes = NULL,
                          conditional_info_threshold = 0.1,
                          varimp_threshold = 0.1,
                          data_fraction = 1,
-                         nparallelism = 0,
                          ntop = 50,
                          compute_p_values = FALSE)
 {
@@ -212,8 +202,6 @@ h2o.infogram <- function(x,
     parms$auc_type <- auc_type
   if (!missing(infogram_algorithm))
     parms$infogram_algorithm <- infogram_algorithm
-  if (!missing(model_algorithm))
-    parms$model_algorithm <- model_algorithm
   if (!missing(sensitive_attributes))
     parms$sensitive_attributes <- sensitive_attributes
   if (!missing(conditional_info_threshold))
@@ -222,8 +210,6 @@ h2o.infogram <- function(x,
     parms$varimp_threshold <- varimp_threshold
   if (!missing(data_fraction))
     parms$data_fraction <- data_fraction
-  if (!missing(nparallelism))
-    parms$nparallelism <- nparallelism
   if (!missing(ntop))
     parms$ntop <- ntop
   if (!missing(compute_p_values))
@@ -231,8 +217,6 @@ h2o.infogram <- function(x,
 
   if (!missing(infogram_algorithm_params))
       parms$infogram_algorithm_params <- as.character(toJSON(infogram_algorithm_params, pretty = TRUE))
-  if (!missing(model_algorithm_params))
-      parms$model_algorithm_params <- as.character(toJSON(model_algorithm_params, pretty = TRUE))
 
   # Error check and build model
   model <- .h2o.modelJob('infogram', parms, h2oRestApiVersion=3, verbose=FALSE)
@@ -240,9 +224,6 @@ h2o.infogram <- function(x,
   # Convert infogram_algorithm_params back to list if not NULL
   if (!missing(infogram_algorithm_params)) {
       model@parameters$infogram_algorithm_params <- list(fromJSON(model@parameters$infogram_algorithm_params))[[1]] #Need the `[[ ]]` to avoid a nested list
-  }
-  if (!missing(model_algorithm_params)) {
-      model@parameters$model_algorithm_params <- list(fromJSON(model@parameters$model_algorithm_params))[[1]] #Need the `[[ ]]` to avoid a nested list
   }
   return(model)
 }
@@ -275,13 +256,10 @@ h2o.infogram <- function(x,
                                          auc_type = c("AUTO", "NONE", "MACRO_OVR", "WEIGHTED_OVR", "MACRO_OVO", "WEIGHTED_OVO"),
                                          infogram_algorithm = c("AUTO", "deeplearning", "drf", "gbm", "glm", "xgboost"),
                                          infogram_algorithm_params = NULL,
-                                         model_algorithm = c("AUTO", "deeplearning", "drf", "gbm", "glm", "xgboost"),
-                                         model_algorithm_params = NULL,
                                          sensitive_attributes = NULL,
                                          conditional_info_threshold = 0.1,
                                          varimp_threshold = 0.1,
                                          data_fraction = 1,
-                                         nparallelism = 0,
                                          ntop = 50,
                                          compute_p_values = FALSE,
                                          segment_columns = NULL,
@@ -366,8 +344,6 @@ h2o.infogram <- function(x,
     parms$auc_type <- auc_type
   if (!missing(infogram_algorithm))
     parms$infogram_algorithm <- infogram_algorithm
-  if (!missing(model_algorithm))
-    parms$model_algorithm <- model_algorithm
   if (!missing(sensitive_attributes))
     parms$sensitive_attributes <- sensitive_attributes
   if (!missing(conditional_info_threshold))
@@ -376,8 +352,6 @@ h2o.infogram <- function(x,
     parms$varimp_threshold <- varimp_threshold
   if (!missing(data_fraction))
     parms$data_fraction <- data_fraction
-  if (!missing(nparallelism))
-    parms$nparallelism <- nparallelism
   if (!missing(ntop))
     parms$ntop <- ntop
   if (!missing(compute_p_values))
@@ -385,8 +359,6 @@ h2o.infogram <- function(x,
 
   if (!missing(infogram_algorithm_params))
       parms$infogram_algorithm_params <- as.character(toJSON(infogram_algorithm_params, pretty = TRUE))
-  if (!missing(model_algorithm_params))
-      parms$model_algorithm_params <- as.character(toJSON(model_algorithm_params, pretty = TRUE))
 
   # Build segment-models specific parameters
   segment_parms <- list()

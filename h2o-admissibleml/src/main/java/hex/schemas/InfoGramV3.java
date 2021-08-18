@@ -55,13 +55,10 @@ public class InfoGramV3 extends ModelBuilderSchema<InfoGram, InfoGramV3, InfoGra
             // new parameters for INFOGRAMs only
             "infogram_algorithm", // choose algo and parameter to generate infogram
             "infogram_algorithm_params",
-            "model_algorithm",    // choose algo and parameter to generate final model
-            "model_algorithm_params",
             "sensitive_attributes",
             "conditional_info_threshold",
             "varimp_threshold",
             "data_fraction",
-            "nparallelism",
             "ntop",
             "compute_p_values"
     };
@@ -123,17 +120,6 @@ public class InfoGramV3 extends ModelBuilderSchema<InfoGram, InfoGramV3, InfoGra
             level = API.Level.expert, gridable=true)
     public String infogram_algorithm_params;
 
-    @API(help = "Machine learning algorithm chosen to build the final model.  Default to AUTO.  If you do not specify" +
-            "model_algorithm_params, this will turn off final model building.  If you want to build a final model," +
-            " make sure you specify model_algorithm not to AUTO or specify model_algorithm_params.  If you specify" +
-            "model_algorithm_params but did not specify model_algorithm, a final gbm will be built with parameters" +
-            "specified in model_algorithm_params.", values={"AUTO", "deeplearning", "drf", "gbm", "glm", "xgboost"},
-            level = API.Level.critical, direction = API.Direction.INOUT, gridable=true)
-    public InfoGramModel.InfoGramParameters.Algorithm model_algorithm;
-
-    @API(help = "parameters specified to the chosen final algorithm", level = API.Level.secondary, gridable=true)
-    public String model_algorithm_params;
-
     @API(help = "predictors that are to be excluded from model due to them being discriminatory or inappropriate for" +
             " whatever reason.", level = API.Level.secondary, gridable=true)
     public String[] sensitive_attributes;
@@ -149,10 +135,6 @@ public class InfoGramV3 extends ModelBuilderSchema<InfoGram, InfoGramV3, InfoGra
     @API(help = "fraction of training frame to use to build the infogram model.  Default to 1.0",
             level = API.Level.secondary, gridable = true)
     public double data_fraction;
-
-    @API(help = "number of models to build in parallel.  Default to 0.0 which is adaptive to the system capability",
-            level = API.Level.secondary, gridable = true)
-    public int nparallelism;
 
     @API(help = "number of top k variables to consider based on the varimp.  Default to 0.0 which is to consider" +
             " all predictors",
@@ -176,18 +158,6 @@ public class InfoGramV3 extends ModelBuilderSchema<InfoGram, InfoGramV3, InfoGra
                 .createAndFillImpl();
         super.fillImpl(impl);
       }
-
-      if (model_algorithm_params != null && !model_algorithm_params.isEmpty()) {
-        Properties p = generateProperties(model_algorithm_params);
-        ParamNParamSchema schemaParams = generateParamsSchema(model_algorithm);
-        schemaParams._paramsSchema.init_meta();
-        impl._model_algorithm_parameters = (Model.Parameters) schemaParams._paramsSchema
-                .fillFromImpl(schemaParams._params)
-                .fillFromParms(p, true)
-                .createAndFillImpl();
-        super.fillImpl(impl);
-      }
-      
       return impl;
     }
     

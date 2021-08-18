@@ -51,7 +51,7 @@ class H2OInfoGramEstimator(H2OEstimator):
                  offset_column=None,  # type: Optional[str]
                  weights_column=None,  # type: Optional[str]
                  standardize=False,  # type: bool
-                 distribution="auto",  # type: Literal["auto", "bernoulli", "multinomial", "ordinal"]
+                 distribution="auto",  # type: Literal["auto", "bernoulli", "multinomial", "gaussian", "poisson", "gamma", "tweedie", "laplace", "quantile", "huber"]
                  plug_values=None,  # type: Optional[Union[None, str, H2OFrame]]
                  max_iterations=0,  # type: int
                  stopping_rounds=0,  # type: int
@@ -66,13 +66,10 @@ class H2OInfoGramEstimator(H2OEstimator):
                  auc_type="auto",  # type: Literal["auto", "none", "macro_ovr", "weighted_ovr", "macro_ovo", "weighted_ovo"]
                  infogram_algorithm="gbm",  # type: Literal["auto", "deeplearning", "drf", "gbm", "glm", "xgboost"]
                  infogram_algorithm_params=None,  # type: Optional[dict]
-                 model_algorithm="auto",  # type: Literal["auto", "deeplearning", "drf", "gbm", "glm", "xgboost"]
-                 model_algorithm_params=None,  # type: Optional[dict]
                  sensitive_attributes=None,  # type: Optional[List[str]]
                  conditional_info_threshold=0.1,  # type: float
                  varimp_threshold=0.1,  # type: float
                  data_fraction=1.0,  # type: float
-                 nparallelism=0,  # type: int
                  ntop=50,  # type: int
                  compute_p_values=False,  # type: bool
                  ):
@@ -126,7 +123,8 @@ class H2OInfoGramEstimator(H2OEstimator):
                that row twice. Negative weights are not allowed. Note: Weights are per-row observation weights and do
                not increase the size of the data frame. This is typically the number of times a row is repeated, but
                non-integer values are supported as well. During training, rows with higher weights matter more, due to
-               the larger loss function pre-factor.
+               the larger loss function pre-factor. If you set weight = 0 for a row, the returned prediction frame at
+               that row is zero and this is incorrect. To get an accurate prediction, remove all rows with weight == 0.
                Defaults to ``None``.
         :type weights_column: str, optional
         :param standardize: Standardize numeric columns to have zero mean and unit variance
@@ -134,7 +132,8 @@ class H2OInfoGramEstimator(H2OEstimator):
         :type standardize: bool
         :param distribution: Distribution function
                Defaults to ``"auto"``.
-        :type distribution: Literal["auto", "bernoulli", "multinomial", "ordinal"]
+        :type distribution: Literal["auto", "bernoulli", "multinomial", "gaussian", "poisson", "gamma", "tweedie", "laplace",
+               "quantile", "huber"]
         :param plug_values: Plug Values (a single row frame containing values that will be used to impute missing values
                of the training/validation frame, use with conjunction missing_values_handling = PlugValues)
                Defaults to ``None``.
@@ -188,16 +187,6 @@ class H2OInfoGramEstimator(H2OEstimator):
                algorithm_params
                Defaults to ``None``.
         :type infogram_algorithm_params: dict, optional
-        :param model_algorithm: Machine learning algorithm chosen to build the final model.  Default to AUTO.  If you do
-               not specifymodel_algorithm_params, this will turn off final model building.  If you want to build a final
-               model, make sure you specify model_algorithm not to AUTO or specify model_algorithm_params.  If you
-               specifymodel_algorithm_params but did not specify model_algorithm, a final gbm will be built with
-               parametersspecified in model_algorithm_params.
-               Defaults to ``"auto"``.
-        :type model_algorithm: Literal["auto", "deeplearning", "drf", "gbm", "glm", "xgboost"]
-        :param model_algorithm_params: parameters specified to the chosen final algorithm
-               Defaults to ``None``.
-        :type model_algorithm_params: dict, optional
         :param sensitive_attributes: predictors that are to be excluded from model due to them being discriminatory or
                inappropriate for whatever reason.
                Defaults to ``None``.
@@ -213,10 +202,6 @@ class H2OInfoGramEstimator(H2OEstimator):
         :param data_fraction: fraction of training frame to use to build the infogram model.  Default to 1.0
                Defaults to ``1.0``.
         :type data_fraction: float
-        :param nparallelism: number of models to build in parallel.  Default to 0.0 which is adaptive to the system
-               capability
-               Defaults to ``0``.
-        :type nparallelism: int
         :param ntop: number of top k variables to consider based on the varimp.  Default to 0.0 which is to consider all
                predictors
                Defaults to ``50``.
@@ -258,13 +243,10 @@ class H2OInfoGramEstimator(H2OEstimator):
         self.auc_type = auc_type
         self.infogram_algorithm = infogram_algorithm
         self.infogram_algorithm_params = infogram_algorithm_params
-        self.model_algorithm = model_algorithm
-        self.model_algorithm_params = model_algorithm_params
         self.sensitive_attributes = sensitive_attributes
         self.conditional_info_threshold = conditional_info_threshold
         self.varimp_threshold = varimp_threshold
         self.data_fraction = data_fraction
-        self.nparallelism = nparallelism
         self.ntop = ntop
         self.compute_p_values = compute_p_values
         self._parms["_rest_version"] = 3
@@ -457,7 +439,9 @@ class H2OInfoGramEstimator(H2OEstimator):
         dataset; giving an observation a relative weight of 2 is equivalent to repeating that row twice. Negative
         weights are not allowed. Note: Weights are per-row observation weights and do not increase the size of the data
         frame. This is typically the number of times a row is repeated, but non-integer values are supported as well.
-        During training, rows with higher weights matter more, due to the larger loss function pre-factor.
+        During training, rows with higher weights matter more, due to the larger loss function pre-factor. If you set
+        weight = 0 for a row, the returned prediction frame at that row is zero and this is incorrect. To get an
+        accurate prediction, remove all rows with weight == 0.
 
         Type: ``str``.
         """
@@ -487,13 +471,14 @@ class H2OInfoGramEstimator(H2OEstimator):
         """
         Distribution function
 
-        Type: ``Literal["auto", "bernoulli", "multinomial", "ordinal"]``, defaults to ``"auto"``.
+        Type: ``Literal["auto", "bernoulli", "multinomial", "gaussian", "poisson", "gamma", "tweedie", "laplace",
+        "quantile", "huber"]``, defaults to ``"auto"``.
         """
         return self._parms.get("distribution")
 
     @distribution.setter
     def distribution(self, distribution):
-        assert_is_type(distribution, None, Enum("auto", "bernoulli", "multinomial", "ordinal"))
+        assert_is_type(distribution, None, Enum("auto", "bernoulli", "multinomial", "gaussian", "poisson", "gamma", "tweedie", "laplace", "quantile", "huber"))
         self._parms["distribution"] = distribution
 
     @property
@@ -713,51 +698,6 @@ class H2OInfoGramEstimator(H2OEstimator):
             self._parms["infogram_algorithm_params"] = None
 
     @property
-    def model_algorithm(self):
-        """
-        Machine learning algorithm chosen to build the final model.  Default to AUTO.  If you do not
-        specifymodel_algorithm_params, this will turn off final model building.  If you want to build a final model,
-        make sure you specify model_algorithm not to AUTO or specify model_algorithm_params.  If you
-        specifymodel_algorithm_params but did not specify model_algorithm, a final gbm will be built with
-        parametersspecified in model_algorithm_params.
-
-        Type: ``Literal["auto", "deeplearning", "drf", "gbm", "glm", "xgboost"]``, defaults to ``"auto"``.
-        """
-        return self._parms.get("model_algorithm")
-
-    @model_algorithm.setter
-    def model_algorithm(self, model_algorithm):
-        assert_is_type(model_algorithm, None, Enum("auto", "deeplearning", "drf", "gbm", "glm", "xgboost"))
-        self._parms["model_algorithm"] = model_algorithm
-
-    @property
-    def model_algorithm_params(self):
-        """
-        parameters specified to the chosen final algorithm
-
-        Type: ``dict``.
-        """
-        if self._parms.get("model_algorithm_params") != None:
-            model_algorithm_params_dict =  ast.literal_eval(self._parms.get("model_algorithm_params"))
-            for k in model_algorithm_params_dict:
-                if len(model_algorithm_params_dict[k]) == 1: #single parameter
-                    model_algorithm_params_dict[k] = model_algorithm_params_dict[k][0]
-            return model_algorithm_params_dict
-        else:
-            return self._parms.get("model_algorithm_params")
-
-    @model_algorithm_params.setter
-    def model_algorithm_params(self, model_algorithm_params):
-        assert_is_type(model_algorithm_params, None, dict)
-        if model_algorithm_params is not None and model_algorithm_params != "":
-            for k in model_algorithm_params:
-                if ("[" and "]") not in str(model_algorithm_params[k]):
-                    model_algorithm_params[k] = [model_algorithm_params[k]]
-            self._parms["model_algorithm_params"] = str(json.dumps(model_algorithm_params))
-        else:
-            self._parms["model_algorithm_params"] = None
-
-    @property
     def sensitive_attributes(self):
         """
         predictors that are to be excluded from model due to them being discriminatory or inappropriate for whatever
@@ -815,20 +755,6 @@ class H2OInfoGramEstimator(H2OEstimator):
     def data_fraction(self, data_fraction):
         assert_is_type(data_fraction, None, numeric)
         self._parms["data_fraction"] = data_fraction
-
-    @property
-    def nparallelism(self):
-        """
-        number of models to build in parallel.  Default to 0.0 which is adaptive to the system capability
-
-        Type: ``int``, defaults to ``0``.
-        """
-        return self._parms.get("nparallelism")
-
-    @nparallelism.setter
-    def nparallelism(self, nparallelism):
-        assert_is_type(nparallelism, None, int)
-        self._parms["nparallelism"] = nparallelism
 
     @property
     def ntop(self):

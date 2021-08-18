@@ -107,7 +107,6 @@ public class InfoGramPipingTest extends TestUtil {
       Scope.track(trainF);
       params._train = trainF._key;
       params._infogram_algorithm = InfoGramModel.InfoGramParameters.Algorithm.gbm;
-      params._model_algorithm = InfoGramModel.InfoGramParameters.Algorithm.gbm;
       params._seed = 12345;
       params._sensitive_attributes = new String[]{"SEX", "AGE"};
       InfoGramModel infogramModel = new InfoGram(params).trainModel().get();

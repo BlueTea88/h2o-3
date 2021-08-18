@@ -262,30 +262,4 @@ public class InfoGramUtils {
     DKV.put(newFrame);
     return newFrame;
   }
-
-  public static void fillModelMetrics(Model model, Model finalModel, Frame trainingFrame, InfoGramModel.InfoGramParameters.Algorithm algo_name) {
-    model._output._training_metrics = finalModel._output._training_metrics;
-    for (Key<ModelMetrics> modelMetricsKey : finalModel._output.getModelMetrics())
-      model.addModelMetrics(modelMetricsKey.get().deepCloneWithDifferentModelAndFrame(finalModel, trainingFrame));
-    model._output._scoring_history = copyTwoDimTable(finalModel._output._scoring_history, "Scoring history of "+
-            algo_name +" final model");
-    model._output._model_summary = copyTwoDimTable(finalModel._output._model_summary, "Model summary of "+
-            algo_name +" final model");
-  }
-
-  public static TwoDimTable copyTwoDimTable(TwoDimTable table, String tableHeader) {
-    String[] rowHeaders = table.getRowHeaders();
-    String[] colTypes = table.getColTypes();
-    int tableSize = rowHeaders.length;
-    int colSize = colTypes.length;
-    TwoDimTable tableCopy = new TwoDimTable(tableHeader, "",
-            rowHeaders, table.getColHeaders(), colTypes, table.getColFormats(),
-            "names");
-    for (int rowIndex = 0; rowIndex < tableSize; rowIndex++)  {
-      for (int colIndex = 0; colIndex < colSize; colIndex++) {
-        tableCopy.set(rowIndex, colIndex,table.get(rowIndex, colIndex));
-      }
-    }
-    return tableCopy;
-  }
 }

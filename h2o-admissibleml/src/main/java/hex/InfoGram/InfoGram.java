@@ -130,13 +130,13 @@ public class InfoGram extends ModelBuilder<InfoGramModel, InfoGramModel.InfoGram
 
     if (_parms._nfolds > 1)
       error("nfolds", "please specify nfolds as part of the algorithm specific parameter in " +
-              "_info_algorithm_parms or _model_algorithm_parms");
+              "_info_algorithm_parms");
 
     if (_parms._nparallelism < 0)
       error("nparallelism", "must be >= 0.  If 0, it is adaptive");
 
     if (_parms._nparallelism == 0) // adaptively set nparallelism
-      _parms._nparallelism = 2* H2O.NUMCPUS;
+      _parms._nparallelism = H2O.NUMCPUS;
     
     if (_parms._compute_p_values)
       error("compute_p_values", " compute_p_values calculation is not yet implemented.");
@@ -147,18 +147,13 @@ public class InfoGram extends ModelBuilder<InfoGramModel, InfoGramModel.InfoGram
     if (DistributionFamily.AUTO.equals(_parms._distribution)) {
       _parms._distribution = (nclasses() == 2) ? DistributionFamily.bernoulli : DistributionFamily.multinomial;
     }
-    
-    if (!AUTO.equals(_parms._model_algorithm) || null != _parms._model_algorithm_parameters)
-      _parms._build_final_model = true;
   }
 
   private class InfoGramDriver extends Driver {
     void generateBasicFrame() {
       String[] eligiblePredictors = extractPredictors(_parms);  // exclude senstive attributes if applicable
       _baseOrSensitiveFrame = extractTrainingFrame(_parms, _parms._sensitive_attributes, 1, _parms.train().clone());
-      _parms.fillImpl(true); // copy over model specific parameters to build infogram
-      if (_parms._build_final_model)
-        _parms.fillImpl(false); // copy over model specific parameters for final model
+      _parms.fillImpl(); // copy over model specific parameters to build infogram
       _topKPredictors = extractTopKPredictors(_parms, _parms.train(), eligiblePredictors, _generatedFrameKeys); // extract topK predictors
     }
 
@@ -188,12 +183,6 @@ public class InfoGram extends ModelBuilder<InfoGramModel, InfoGramModel.InfoGram
         _cmiRelKey = model._output.generateCMIRelFrame();
         model._output.extractAdmissibleFeatures(_varImp, model._output._all_predictor_names, _cmi, _cmiRaw,
                 _parms._conditional_info_threshold, _parms._varimp_threshold);  // extract admissible information model output
-        _job.update(1, "finished building final model with admissible features ...");
-        if (_parms._build_final_model) {
-          Model finalModel = buildFinalModel(model._output._admissible_features);
-          Scope.track_generic(finalModel);
-          fillModelMetrics(model, finalModel, _parms._model_algorithm_parameters._train.get(), _parms._model_algorithm);
-        }
         _job.update(0, "InfoGram building completed...");
         model.update(_job);
       } finally {
@@ -207,19 +196,6 @@ public class InfoGram extends ModelBuilder<InfoGramModel, InfoGramModel.InfoGram
         model.update(_job);
         model.unlock(_job);
       }
-    }
-
-    private Model buildFinalModel(String[] admissibleFeatures) { // build final model with admissible features only
-      Model.Parameters finalParams = _parms._model_algorithm_parameters;
-      Frame trainingFrameFinal = extractTrainingFrame(_parms, admissibleFeatures, 1, _parms.train());
-      _generatedFrameKeys.add(trainingFrameFinal._key);
-      finalParams._train = trainingFrameFinal._key;
-      if (_parms._valid != null)
-        _parms._model_algorithm_parameters._valid = extractTrainingFrame(_parms, admissibleFeatures,
-                1, _parms.valid()).getKey();
-
-      ModelBuilder builder = ModelBuilder.make(finalParams);
-      return (Model) builder.trainModel().get();
     }
 
     private void buildInfoGramsNRelevance() {

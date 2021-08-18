@@ -70,18 +70,14 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
   public static class InfoGramParameters extends Model.Parameters {
     public Algorithm _infogram_algorithm = Algorithm.gbm;     // default to GBM
     public String _infogram_algorithm_params = new String();   // store user specific parameters for chosen algorithm
-    public Algorithm _model_algorithm = Algorithm.AUTO; // default to AUTO which will be GBM to build final model
-    public String _model_algorithm_params = new String();   // store user specific parameters for chosen algorithm
     public String[] _sensitive_attributes = null;     // store sensitive features to be excluded from final model
     public double _conditional_info_threshold = 0.1;  // default set by Deep
     public double _varimp_threshold = 0.1;            // default set by Deep
     public double _data_fraction = 1.0;              // fraction of data to use to calculate infogram
     public Model.Parameters _infogram_algorithm_parameters;   // store parameters of chosen algorithm
-    public Model.Parameters _model_algorithm_parameters;   // store parameters of chosen algorithm
     public int _ntop = 50;                           // if 0 consider all predictors, otherwise, consider topk predictors
     public boolean _compute_p_values = false;                   // if true, will calculate p-value
     public int _nparallelism = 0;
-    public boolean _build_final_model = false;
 
     public enum Algorithm {
       AUTO,
@@ -124,29 +120,23 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
      * 1. when fillInfoGram = true, it will extract the algorithm specific parameters from _info_algorithm_params to
      * infogram_algorithm_parameters which will be one of GBMParameters, DRFParameters, DeepLearningParameters or 
      * GLMParameters.  This will be used to build models and extract the infogram.
-     * 2. when fillInfoGram = false, it will extract the algorithm specific parameters from _model_algorithm_params to 
-     * _model_algorithm_parameters.  This will be used to build the final model.
-     * 3. Next, it will copy the parameters that are common to all algorithms from InfoGramParameters to 
+     * 2. Next, it will copy the parameters that are common to all algorithms from InfoGramParameters to 
      * _algorithm_parameters.
      */
-    public void fillImpl(boolean fillInfoGram) {
+    public void fillImpl() {
       Properties p = new Properties();
       boolean fillParams;
       List<String> excludeList = new ArrayList<>(); // prevent overriding of parameters set by user
-      if (fillInfoGram)
-        fillParams = _infogram_algorithm_params != null && !_infogram_algorithm_params.isEmpty();
-      else
-        fillParams = _model_algorithm_params != null && !_model_algorithm_params.isEmpty();
+      fillParams = _infogram_algorithm_params != null && !_infogram_algorithm_params.isEmpty();
 
       if (fillParams) { // only execute when algorithm specific parameters are filled in by user
-        HashMap<String, String[]> map = fillInfoGram ?
-                new Gson().fromJson(_infogram_algorithm_params, new TypeToken<HashMap<String, String[]>>() {}.getType()):
-                new Gson().fromJson(_model_algorithm_params, new TypeToken<HashMap<String, String[]>>() {
+        HashMap<String, String[]> map =
+                new Gson().fromJson(_infogram_algorithm_params, new TypeToken<HashMap<String, String[]>>() {
                 }.getType());
         for (Map.Entry<String, String[]> param : map.entrySet()) {
           String[] paramVal = param.getValue();
           String paramName = param.getKey();
-          excludeList.add("_"+paramName);
+          excludeList.add("_" + paramName);
           if (paramVal.length == 1) {
             p.setProperty(paramName, paramVal[0]);
           } else {
@@ -157,7 +147,7 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
 
       ModelParametersSchemaV3 paramsSchema;
       Model.Parameters params;
-      Algorithm algoName = fillInfoGram ? _infogram_algorithm : _model_algorithm;
+      Algorithm algoName = _infogram_algorithm;
       switch (algoName) {
         case glm:
           paramsSchema = new GLMV3.GLMParametersV3();
@@ -194,21 +184,15 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
       }
 
       paramsSchema.init_meta();
-      if (fillInfoGram) {
-        _infogram_algorithm_parameters = (Model.Parameters) paramsSchema
-                .fillFromImpl(params)
-                .fillFromParms(p, true)
-                .createAndFillImpl();
-      } else {
-        _model_algorithm_parameters = (Model.Parameters) paramsSchema
-                .fillFromImpl(params)
-                .fillFromParms(p, true)
-                .createAndFillImpl();
-      }
-      copyInfoGramParams(fillInfoGram, excludeList); // copy over InfoGramParameters that are applicable to model specific algos
+      _infogram_algorithm_parameters = (Model.Parameters) paramsSchema
+              .fillFromImpl(params)
+              .fillFromParms(p, true)
+              .createAndFillImpl();
+
+      copyInfoGramParams(excludeList); // copy over InfoGramParameters that are applicable to model specific algos
     }
 
-    public void copyInfoGramParams(boolean fillInfoGram, List<String> excludeList) {
+    public void copyInfoGramParams(List<String> excludeList) {
       Field[] algoParams = Model.Parameters.class.getDeclaredFields();
       Field algoField;
       for (Field oneField : algoParams) {
@@ -216,10 +200,7 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
           String fieldName = oneField.getName();
           algoField = this.getClass().getField(fieldName);
           if (excludeList.size() == 0 || !excludeList.contains(fieldName)) {
-            if (fillInfoGram)
-              algoField.set(_infogram_algorithm_parameters, oneField.get(this));
-            else
-              algoField.set(_model_algorithm_parameters, oneField.get(this));
+            algoField.set(_infogram_algorithm_parameters, oneField.get(this));
           }
         } catch (IllegalAccessException | NoSuchFieldException e) { // suppress error printing.  Only care about fields that are accessible
           ;

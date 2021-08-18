@@ -1,10 +1,7 @@
 rest_api_version = 3
 
 def update_param(name, param):
-    if name == 'model_algorithm_params':
-        param['default_value'] = None
-        return param
-    elif name == 'infogram_algorithm_params':
+    if name == 'infogram_algorithm_params':
         param['default_value'] = None
         return param
     return None  # param untouched
@@ -22,20 +19,15 @@ extensions = dict(
     """,
 
     skip_default_set_params_for=['training_frame', 'ignored_columns', 'response_column', 'max_confusion_matrix_size',
-                                 "infogram_algorithm_params", "model_algorithm_params"],
+                                 "infogram_algorithm_params"],
     set_params="""
 if (!missing(infogram_algorithm_params))
     parms$infogram_algorithm_params <- as.character(toJSON(infogram_algorithm_params, pretty = TRUE))
-if (!missing(model_algorithm_params))
-    parms$model_algorithm_params <- as.character(toJSON(model_algorithm_params, pretty = TRUE))
 """,
     with_model="""
 # Convert infogram_algorithm_params back to list if not NULL
 if (!missing(infogram_algorithm_params)) {
     model@parameters$infogram_algorithm_params <- list(fromJSON(model@parameters$infogram_algorithm_params))[[1]] #Need the `[[ ]]` to avoid a nested list
-}
-if (!missing(model_algorithm_params)) {
-    model@parameters$model_algorithm_params <- list(fromJSON(model@parameters$model_algorithm_params))[[1]] #Need the `[[ ]]` to avoid a nested list
 }
 """,
     module="""
