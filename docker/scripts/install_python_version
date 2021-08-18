@@ -47,10 +47,12 @@ for python_version in "${array[@]}"; do
   then
     curl https://bootstrap.pypa.io/pip/${python_version}/get-pip.py --output get-pip.py
     python${python_version} get-pip.py
-  else
+  elif [[ ${python_version} == "3.8" ]] || [[ ${python_version} == "3.5" ]]
+  then
     python${python_version} -m ensurepip --upgrade
+  else
+    DEBIAN_FRONTEND=noninteractive apt-get -y install python3-pip
   fi
-
 
   echo "###### Creating Virtualenv for Python ${python_version} ######"
   python${python_version} -m pip install virtualenv
@@ -68,4 +70,3 @@ for python_version in "${array[@]}"; do
 done
 
 rm *-requirements*.txt
-rm get-pip.py
