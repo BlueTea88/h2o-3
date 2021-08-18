@@ -4,8 +4,7 @@ source("../../../scripts/h2o-r-test-setup.R")
 # tests that infogram build the correct model for core infogram.  Make sure 
 # 1. it gets the correct result compared to deep's code.
 # 2. the relevance and cmi frame contains the correct values
-# 3. test that infogram_algorithm_params work
-# 4. test that model_algorithm_params work.
+# 3. test that infogram_algorithm_params work.
 infogramBC <- function() {
     bhexFV <- h2o.importFile(locate("smalldata/admissibleml_test/wdbc_changed.csv"))
     bhexFV["diagnosis"]<- h2o.asfactor(bhexFV["diagnosis"])
@@ -26,7 +25,7 @@ infogramBC <- function() {
                       0.31939378, 0.19370515, 0.00000000, 0.16463918, 0.00000000, 0.00000000, 0.44830772, 1.00000000,
                       0.00000000, 0.00000000, 0.62478098, 0.00000000, 0.00000000, 0.00000000, 0.00000000, 0.64466111))
     Log.info("Build the model")
-    mFV <- h2o.infogram(y=Y, x=X, training_frame=bhexFV,  seed=12345, ntop=50)
+    mFV <- h2o.infogram(y=Y, x=X, training_frame=bhexFV,  seed=12345, top_n_features=50)
     relCMIFrame <- h2o.get_relevance_cmi_frame(mFV) # get frames containing relevance and cmi
     frameCMI <- sort(as.vector(t(relCMIFrame[,3])))
     frameRel <- sort(as.vector(t(relCMIFrame[,2])))
@@ -44,14 +43,13 @@ infogramBC <- function() {
     
     # model built with different parameters and their relevance and cmi to be different
     gbm_params <- list(ntrees=3)
-    glm_params <- list(family='binomial')
     
-    mFVNew <- h2o.infogram(y=Y, x=X, training_frame=bhexFV,  seed=12345, ntop=50, infogram_algorithm='gbm', 
-                           infogram_algorithm_params=gbm_params, model_algorithm='glm', model_algorithm_params=glm_params)
+    mFVNew <- h2o.infogram(y=Y, x=X, training_frame=bhexFV,  seed=12345, top_n_features=50, infogram_algorithm='gbm', 
+                           infogram_algorithm_params=gbm_params)
     admissibleCMINew <- sort(h2o.get_admissible_cmi(mFVNew))
     admissibleRelNew <- sort(h2o.get_admissible_relevance(mFVNew))
-    expect_true((admissibleCMINew[1] - admissibleCMI[1]) > 0.1) # CMI and relevance should not equal
-    expect_true((admissibleRelNew[1] - admissibleRel[1]) > 0.1)
+    expect_true((admissibleCMINew[1] - admissibleCMI[1]) > 0.001) # CMI and relevance should not equal
+    expect_true((admissibleRelNew[1] - admissibleRel[1]) > 0.001)
 }
 
 doTest("Infogram: Breast cancer core infogram", infogramBC)

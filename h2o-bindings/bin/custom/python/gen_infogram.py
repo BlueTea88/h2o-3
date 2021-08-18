@@ -11,7 +11,7 @@ def update_param(name, param):
 def class_extensions():
     def get_relevance_cmi_frame(self):
         """
-        Get the relevance and CMI for all attributes returned by InfoGram as an H2O Frame.
+        Get the relevance and CMI for all attributes returned by Infogram as an H2O Frame.
         :param self: 
         :return: H2OFrame
         """
@@ -163,11 +163,11 @@ else:
 
 doc = dict(
     __class__="""
-Given a sensitive/unfair predictors list, InfoGram will add all predictors that contains information on the 
+Given a sensitive/unfair predictors list, Infogram will add all predictors that contains information on the 
  sensitive/unfair predictors list to the sensitive/unfair predictors list.  It will return a set of predictors that
  do not contain information on the sensitive/unfair list and hence user can build a fair model.  If no sensitive/unfair
- predictor list is given, InfoGram will return a list of core predictors that should be used to build a final model.
- InfoGram can significantly cut down the number of predictors needed to build a model and hence will build a simple
+ predictor list is given, Infogram will return a list of core predictors that should be used to build a final model.
+ Infogram can significantly cut down the number of predictors needed to build a model and hence will build a simple
  model that is more interpretable, less susceptible to overfitting, runs faster while providing similar accuracy
  as models built using all attributes.
 """

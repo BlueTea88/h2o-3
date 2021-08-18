@@ -18,15 +18,15 @@ from h2o.frame import H2OFrame
 from h2o.utils.typechecks import assert_is_type, Enum, numeric
 
 
-class H2OInfoGramEstimator(H2OEstimator):
+class H2OInfogram(H2OEstimator):
     """
     Information Diagram
 
-    Given a sensitive/unfair predictors list, InfoGram will add all predictors that contains information on the 
+    Given a sensitive/unfair predictors list, Infogram will add all predictors that contains information on the 
      sensitive/unfair predictors list to the sensitive/unfair predictors list.  It will return a set of predictors that
      do not contain information on the sensitive/unfair list and hence user can build a fair model.  If no sensitive/unfair
-     predictor list is given, InfoGram will return a list of core predictors that should be used to build a final model.
-     InfoGram can significantly cut down the number of predictors needed to build a model and hence will build a simple
+     predictor list is given, Infogram will return a list of core predictors that should be used to build a final model.
+     Infogram can significantly cut down the number of predictors needed to build a model and hence will build a simple
      model that is more interpretable, less susceptible to overfitting, runs faster while providing similar accuracy
      as models built using all attributes.
     """
@@ -66,11 +66,11 @@ class H2OInfoGramEstimator(H2OEstimator):
                  auc_type="auto",  # type: Literal["auto", "none", "macro_ovr", "weighted_ovr", "macro_ovo", "weighted_ovo"]
                  infogram_algorithm="gbm",  # type: Literal["auto", "deeplearning", "drf", "gbm", "glm", "xgboost"]
                  infogram_algorithm_params=None,  # type: Optional[dict]
-                 sensitive_attributes=None,  # type: Optional[List[str]]
+                 protected_columns=None,  # type: Optional[List[str]]
                  conditional_info_threshold=0.1,  # type: float
                  varimp_threshold=0.1,  # type: float
                  data_fraction=1.0,  # type: float
-                 ntop=50,  # type: int
+                 top_n_features=50,  # type: int
                  compute_p_values=False,  # type: bool
                  ):
         """
@@ -187,10 +187,10 @@ class H2OInfoGramEstimator(H2OEstimator):
                algorithm_params
                Defaults to ``None``.
         :type infogram_algorithm_params: dict, optional
-        :param sensitive_attributes: predictors that are to be excluded from model due to them being discriminatory or
+        :param protected_columns: predictors that are to be excluded from model due to them being discriminatory or
                inappropriate for whatever reason.
                Defaults to ``None``.
-        :type sensitive_attributes: List[str], optional
+        :type protected_columns: List[str], optional
         :param conditional_info_threshold: conditional information threshold between 0 and 1 that is used to decide
                whether a predictor's conditional information is high enough.  Default to 0.1
                Defaults to ``0.1``.
@@ -202,15 +202,15 @@ class H2OInfoGramEstimator(H2OEstimator):
         :param data_fraction: fraction of training frame to use to build the infogram model.  Default to 1.0
                Defaults to ``1.0``.
         :type data_fraction: float
-        :param ntop: number of top k variables to consider based on the varimp.  Default to 0.0 which is to consider all
-               predictors
+        :param top_n_features: number of top k variables to consider based on the varimp.  Default to 0.0 which is to
+               consider all predictors
                Defaults to ``50``.
-        :type ntop: int
+        :type top_n_features: int
         :param compute_p_values: If true will calculate the p-value. Default to false
                Defaults to ``False``.
         :type compute_p_values: bool
         """
-        super(H2OInfoGramEstimator, self).__init__()
+        super(H2OInfogram, self).__init__()
         self._parms = {}
         self._id = self._parms['model_id'] = model_id
         self.training_frame = training_frame
@@ -243,11 +243,11 @@ class H2OInfoGramEstimator(H2OEstimator):
         self.auc_type = auc_type
         self.infogram_algorithm = infogram_algorithm
         self.infogram_algorithm_params = infogram_algorithm_params
-        self.sensitive_attributes = sensitive_attributes
+        self.protected_columns = protected_columns
         self.conditional_info_threshold = conditional_info_threshold
         self.varimp_threshold = varimp_threshold
         self.data_fraction = data_fraction
-        self.ntop = ntop
+        self.top_n_features = top_n_features
         self.compute_p_values = compute_p_values
         self._parms["_rest_version"] = 3
 
@@ -698,19 +698,19 @@ class H2OInfoGramEstimator(H2OEstimator):
             self._parms["infogram_algorithm_params"] = None
 
     @property
-    def sensitive_attributes(self):
+    def protected_columns(self):
         """
         predictors that are to be excluded from model due to them being discriminatory or inappropriate for whatever
         reason.
 
         Type: ``List[str]``.
         """
-        return self._parms.get("sensitive_attributes")
+        return self._parms.get("protected_columns")
 
-    @sensitive_attributes.setter
-    def sensitive_attributes(self, sensitive_attributes):
-        assert_is_type(sensitive_attributes, None, [str])
-        self._parms["sensitive_attributes"] = sensitive_attributes
+    @protected_columns.setter
+    def protected_columns(self, protected_columns):
+        assert_is_type(protected_columns, None, [str])
+        self._parms["protected_columns"] = protected_columns
 
     @property
     def conditional_info_threshold(self):
@@ -757,18 +757,18 @@ class H2OInfoGramEstimator(H2OEstimator):
         self._parms["data_fraction"] = data_fraction
 
     @property
-    def ntop(self):
+    def top_n_features(self):
         """
         number of top k variables to consider based on the varimp.  Default to 0.0 which is to consider all predictors
 
         Type: ``int``, defaults to ``50``.
         """
-        return self._parms.get("ntop")
+        return self._parms.get("top_n_features")
 
-    @ntop.setter
-    def ntop(self, ntop):
-        assert_is_type(ntop, None, int)
-        self._parms["ntop"] = ntop
+    @top_n_features.setter
+    def top_n_features(self, top_n_features):
+        assert_is_type(top_n_features, None, int)
+        self._parms["top_n_features"] = top_n_features
 
     @property
     def compute_p_values(self):
@@ -787,7 +787,7 @@ class H2OInfoGramEstimator(H2OEstimator):
 
     def get_relevance_cmi_frame(self):
         """
-        Get the relevance and CMI for all attributes returned by InfoGram as an H2O Frame.
+        Get the relevance and CMI for all attributes returned by Infogram as an H2O Frame.
         :param self: 
         :return: H2OFrame
         """

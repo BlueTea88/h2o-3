@@ -2,7 +2,7 @@ from __future__ import print_function
 import os
 import sys
 
-from h2o.estimators.infogram import H2OInfoGramEstimator
+from h2o.estimators.infogram import H2OInfogram
 
 sys.path.insert(1, os.path.join("..","..",".."))
 import h2o
@@ -34,7 +34,7 @@ def test_infogram_breast_cancer():
          "compactness_se", "concavity_se", "concave_points_se", "symmetry_se", "fractal_dimension_se",
          "radius_worst", "texture_worst", "perimeter_worst", "area_worst", "smoothness_worst", "compactness_worst",
          "concavity_worst", "concave_points_worst", "symmetry_worst", "fractal_dimension_worst"]
-    infogram_model = H2OInfoGramEstimator(seed = 12345, ntop=50)
+    infogram_model = H2OInfogram(seed = 12345, top_n_features=50)
     infogram_model.train(x=x, y=target, training_frame=fr)
 
     # make sure our result matches Deep's
@@ -45,9 +45,8 @@ def test_infogram_breast_cancer():
 
     gbm_params = {'ntrees':3}
     glm_params = {'family':'binomial'}
-    infogram_model_gbm_glm = H2OInfoGramEstimator(seed = 12345, ntop=50, 
-                                                  infogram_algorithm='gbm', infogram_algorithm_params=gbm_params, 
-                                                  model_algorithm='glm', model_algorithm_params=glm_params)
+    infogram_model_gbm_glm = H2OInfogram(seed = 12345, top_n_features=50, 
+                                                  infogram_algorithm='gbm', infogram_algorithm_params=gbm_params)
     infogram_model_gbm_glm.train(x=x, y=target, training_frame=fr)
     x, cmi_gbm_glm = infogram_model_gbm_glm.get_all_predictor_cmi()
     assert abs(cmi_gbm_glm[1]-cmi[1]) > 0.01, "CMI from infogram model with gbm using different number of trees should" \

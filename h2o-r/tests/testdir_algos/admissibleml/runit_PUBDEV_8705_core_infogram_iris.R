@@ -12,7 +12,8 @@ infogramIris <- function() {
     deepRel <- sort(c(0.009010006, 0.011170417, 0.755170945, 1.000000000))
     deepCMI <- sort(c(0.1038524, 0.7135458, 0.5745915, 1.0000000))
     Log.info("Build the model")
-    mFV <- h2o.infogram(y=Y, x=X, training_frame=bhexFV,  seed=12345, ntop=50)
+    browser()
+    mFV <- h2o.infogram(y=Y, x=X, training_frame=bhexFV,  seed=12345, top_n_features=50)
     relCMIFrame <- h2o.get_relevance_cmi_frame(mFV) # get frames containing relevance and cmi
     frameCMI <- sort(as.vector(t(relCMIFrame[,3])))
     frameRel <- sort(as.vector(t(relCMIFrame[,2])))

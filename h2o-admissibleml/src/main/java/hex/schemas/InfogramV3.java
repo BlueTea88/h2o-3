@@ -2,8 +2,8 @@ package hex.schemas;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import hex.InfoGram.InfoGram;
-import hex.InfoGram.InfoGramModel;
+import hex.Infogram.Infogram;
+import hex.Infogram.InfogramModel;
 import hex.Model;
 import hex.deeplearning.DeepLearningModel;
 import hex.glm.GLMModel;
@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public class InfoGramV3 extends ModelBuilderSchema<InfoGram, InfoGramV3, InfoGramV3.InfoGramParametersV3> {
-  public static final class InfoGramParametersV3 extends ModelParametersSchemaV3<InfoGramModel.InfoGramParameters, InfoGramParametersV3> {
+public class InfogramV3 extends ModelBuilderSchema<Infogram, InfogramV3, InfogramV3.InfogramParametersV3> {
+  public static final class InfogramParametersV3 extends ModelParametersSchemaV3<InfogramModel.InfogramParameters, InfogramParametersV3> {
     public static final String[] fields = new String[] {
             "model_id",
             "training_frame",
@@ -55,11 +55,11 @@ public class InfoGramV3 extends ModelBuilderSchema<InfoGram, InfoGramV3, InfoGra
             // new parameters for INFOGRAMs only
             "infogram_algorithm", // choose algo and parameter to generate infogram
             "infogram_algorithm_params",
-            "sensitive_attributes",
+            "protected_columns",
             "conditional_info_threshold",
             "varimp_threshold",
             "data_fraction",
-            "ntop",
+            "top_n_features",
             "compute_p_values"
     };
 
@@ -114,7 +114,7 @@ public class InfoGramV3 extends ModelBuilderSchema<InfoGram, InfoGramV3, InfoGra
     @API(help = "Machine learning algorithm chosen to build the infogram.  AUTO default to GBM", values={"AUTO",
             "deeplearning", "drf", "gbm", "glm", "xgboost"}, level = API.Level.expert, 
             direction = API.Direction.INOUT, gridable=true)
-    public InfoGramModel.InfoGramParameters.Algorithm infogram_algorithm;
+    public InfogramModel.InfogramParameters.Algorithm infogram_algorithm;
 
     @API(help = "parameters specified to the chosen algorithm can be passed to infogram using algorithm_params",
             level = API.Level.expert, gridable=true)
@@ -122,7 +122,7 @@ public class InfoGramV3 extends ModelBuilderSchema<InfoGram, InfoGramV3, InfoGra
 
     @API(help = "predictors that are to be excluded from model due to them being discriminatory or inappropriate for" +
             " whatever reason.", level = API.Level.secondary, gridable=true)
-    public String[] sensitive_attributes;
+    public String[] protected_columns;
 
     @API(help = "conditional information threshold between 0 and 1 that is used to decide whether a predictor's " +
             "conditional information is high enough.  Default to 0.1", level = API.Level.secondary, gridable = true)
@@ -139,15 +139,14 @@ public class InfoGramV3 extends ModelBuilderSchema<InfoGram, InfoGramV3, InfoGra
     @API(help = "number of top k variables to consider based on the varimp.  Default to 0.0 which is to consider" +
             " all predictors",
             level = API.Level.secondary, gridable = true)
-    public int ntop;
+    public int top_n_features;
     
     @API(help = "If true will calculate the p-value. Default to false",
             level = API.Level.secondary, gridable = false)
     public boolean compute_p_values;  // todo implement this option
 
-    public InfoGramModel.InfoGramParameters fillImpl(InfoGramModel.InfoGramParameters impl) {
+    public InfogramModel.InfogramParameters fillImpl(InfogramModel.InfogramParameters impl) {
       super.fillImpl(impl);
- 
       if (infogram_algorithm_params != null && !infogram_algorithm_params.isEmpty()) {
         Properties p = generateProperties(infogram_algorithm_params);
         ParamNParamSchema schemaParams = generateParamsSchema(infogram_algorithm);
@@ -186,7 +185,7 @@ public class InfoGramV3 extends ModelBuilderSchema<InfoGram, InfoGramV3, InfoGra
       }
     }
 
-    ParamNParamSchema generateParamsSchema(InfoGramModel.InfoGramParameters.Algorithm chosenAlgo) {
+    ParamNParamSchema generateParamsSchema(InfogramModel.InfogramParameters.Algorithm chosenAlgo) {
       ModelParametersSchemaV3 paramsSchema;
       Model.Parameters params;
       switch (chosenAlgo) {

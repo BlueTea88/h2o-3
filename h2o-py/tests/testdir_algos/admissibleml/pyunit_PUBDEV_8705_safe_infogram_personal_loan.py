@@ -2,7 +2,7 @@ from __future__ import print_function
 import os
 import sys
 
-from h2o.estimators.infogram import H2OInfoGramEstimator
+from h2o.estimators.infogram import H2OInfogram
 
 sys.path.insert(1, os.path.join("..","..",".."))
 import h2o
@@ -25,7 +25,7 @@ def test_infogram_personal_loan():
     fr[target] = fr[target].asfactor()
     x = ["Experience","Income","Family","CCAvg","Education","Mortgage",
          "Securities Account","CD Account","Online","CreditCard"]
-    infogram_model = H2OInfoGramEstimator(seed = 12345, sensitive_attributes=["Age","ZIP Code"])
+    infogram_model = H2OInfogram(seed = 12345, protected_columns=["Age","ZIP Code"])
     infogram_model.train(x=x, y=target, training_frame=fr)
         
     # make sure frame returning all predictors, relevance and cmi contains correct value

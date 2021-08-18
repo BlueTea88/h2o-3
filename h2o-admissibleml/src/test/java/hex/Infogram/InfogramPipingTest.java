@@ -1,4 +1,4 @@
-package hex.InfoGram;
+package hex.Infogram;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,10 +10,8 @@ import water.fvec.Vec;
 import water.runner.CloudSize;
 import water.runner.H2ORunner;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import static hex.DMatrix.transpose;
@@ -21,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(H2ORunner.class)
 @CloudSize(1)
-public class InfoGramPipingTest extends TestUtil {
+public class InfogramPipingTest extends TestUtil {
   public static final double TOLERANCE = 1e-6;
 
   // Deep example 9
@@ -33,13 +31,13 @@ public class InfoGramPipingTest extends TestUtil {
       double[] deepCMI = new double[]{0.1038524, 0.7135458, 0.5745915, 1.0000000};
       Frame trainF = parseTestFile("smalldata/admissibleml_test/irisROriginal.csv");
       Scope.track(trainF);
-      InfoGramModel.InfoGramParameters params = new InfoGramModel.InfoGramParameters();
+      InfogramModel.InfogramParameters params = new InfogramModel.InfogramParameters();
       params._response_column = "Species";
       params._train = trainF._key;
-      params._infogram_algorithm = InfoGramModel.InfoGramParameters.Algorithm.gbm;
+      params._infogram_algorithm = InfogramModel.InfogramParameters.Algorithm.gbm;
       params._seed = 12345;
 
-      InfoGramModel infogramModel = new InfoGram(params).trainModel().get();
+      InfogramModel infogramModel = new Infogram(params).trainModel().get();
       Scope.track_generic(infogramModel);
       assertEqualCMIRel(deepRel, deepCMI, infogramModel._output, TOLERANCE);
       Frame infogramFr = DKV.getGet(infogramModel._output._relCmiKey);  // info gram info in an H2OFrame
@@ -62,17 +60,17 @@ public class InfoGramPipingTest extends TestUtil {
               0.57575695, 0.30663930, 0.07604779, 0.19979514, 0.42293369, 0.20628365, 0.25316918, 0.15096705,
               0.24501686, 0.11296778, 0.13068605, 0.03841617};
       Frame trainF = parseTestFile("smalldata/admissibleml_test/german_credit.csv");
-      InfoGramModel.InfoGramParameters params = new InfoGramModel.InfoGramParameters();
+      InfogramModel.InfogramParameters params = new InfogramModel.InfogramParameters();
       params._response_column = "BAD";
       trainF.replace(trainF.numCols()-1, trainF.vec(params._response_column).toCategoricalVec()).remove();
       DKV.put(trainF);
       params._train = trainF._key;
-      params._infogram_algorithm = InfoGramModel.InfoGramParameters.Algorithm.gbm;
-      params._sensitive_attributes = new String[]{"status_gender", "age"};
-      params._ntop = 50;
+      params._infogram_algorithm = InfogramModel.InfogramParameters.Algorithm.gbm;
+      params._protected_columns = new String[]{"status_gender", "age"};
+      params._top_n_features = 50;
       Scope.track(trainF);
 
-      InfoGramModel infogramModel = new InfoGram(params).trainModel().get();
+      InfogramModel infogramModel = new Infogram(params).trainModel().get();
       Scope.track_generic(infogramModel);
       assertEqualCMIRel(deepRel, deepCMI, infogramModel._output, TOLERANCE);
       Frame infogramFr = DKV.getGet(infogramModel._output._relCmiKey);  // info gram info in an H2OFrame
@@ -100,16 +98,16 @@ public class InfoGramPipingTest extends TestUtil {
       Frame trainF = parseTestFile("smalldata/admissibleml_test/taiwan_credit_card_uci.csv");
       int ncol = trainF.numCols();
       trainF.replace(ncol-1, trainF.vec(ncol-1).toCategoricalVec()).remove();
-      InfoGramModel.InfoGramParameters params = new InfoGramModel.InfoGramParameters();
+      InfogramModel.InfogramParameters params = new InfogramModel.InfogramParameters();
       params._response_column = "default payment next month";
       Scope.track(trainF.remove(0));
       DKV.put(trainF);
       Scope.track(trainF);
       params._train = trainF._key;
-      params._infogram_algorithm = InfoGramModel.InfoGramParameters.Algorithm.gbm;
+      params._infogram_algorithm = InfogramModel.InfogramParameters.Algorithm.gbm;
       params._seed = 12345;
-      params._sensitive_attributes = new String[]{"SEX", "AGE"};
-      InfoGramModel infogramModel = new InfoGram(params).trainModel().get();
+      params._protected_columns = new String[]{"SEX", "AGE"};
+      InfogramModel infogramModel = new Infogram(params).trainModel().get();
       Scope.track_generic(infogramModel);
       assertEqualCMIRel(deepRel, deepCMI, infogramModel._output, TOLERANCE);
     } finally {
@@ -148,14 +146,14 @@ public class InfoGramPipingTest extends TestUtil {
       transposeF.replace(transposeF.numCols()-1, transposeF.vec("y").toCategoricalVec()).remove();
       Scope.track(transposeF);
       DKV.put(transposeF);
-      InfoGramModel.InfoGramParameters params = new InfoGramModel.InfoGramParameters();
+      InfogramModel.InfogramParameters params = new InfogramModel.InfogramParameters();
       params._response_column = "y";
       params._train = transposeF._key;
-      params._infogram_algorithm = InfoGramModel.InfoGramParameters.Algorithm.gbm;
-      params._ntop = 50;
+      params._infogram_algorithm = InfogramModel.InfogramParameters.Algorithm.gbm;
+      params._top_n_features = 50;
       params._seed = 12345;
 
-      InfoGramModel infogramModel = new InfoGram(params).trainModel().get();
+      InfogramModel infogramModel = new Infogram(params).trainModel().get();
       Scope.track_generic(infogramModel);
       assertEqualCMIRel( deepRel, deepCMI, infogramModel._output, TOLERANCE);
     } finally {
@@ -177,16 +175,16 @@ public class InfoGramPipingTest extends TestUtil {
       Frame trainF = Scope.track(parseTestFile("smalldata/admissibleml_test/compas_full.csv"));
       trainF.replace(trainF.numCols()-1, trainF.vec("two_year_recid").toCategoricalVec()).remove();
       DKV.put(trainF);
-      InfoGramModel.InfoGramParameters params = new InfoGramModel.InfoGramParameters();
+      InfogramModel.InfogramParameters params = new InfogramModel.InfogramParameters();
       params._response_column = "two_year_recid";
       params._train = trainF._key;
-      params._sensitive_attributes = new String[]{"sex","age","race"};
-      params._infogram_algorithm = InfoGramModel.InfoGramParameters.Algorithm.gbm;
+      params._protected_columns = new String[]{"sex","age","race"};
+      params._infogram_algorithm = InfogramModel.InfogramParameters.Algorithm.gbm;
       params._ignored_columns = new String[]{"id"};
-      params._ntop = 50;
+      params._top_n_features = 50;
       params._seed = 12345;
 
-      InfoGramModel infogramModel = new InfoGram(params).trainModel().get();
+      InfogramModel infogramModel = new Infogram(params).trainModel().get();
       Scope.track_generic(infogramModel);
       assertEqualCMIRel(deepRel, deepCMI, infogramModel._output, TOLERANCE);
     } finally {
@@ -219,14 +217,14 @@ public class InfoGramPipingTest extends TestUtil {
       trainF.setNames(colNames);
       trainF.replace(0, trainF.vec("diagnosis").toCategoricalVec()).remove();
       DKV.put(trainF);
-      InfoGramModel.InfoGramParameters params = new InfoGramModel.InfoGramParameters();
+      InfogramModel.InfogramParameters params = new InfogramModel.InfogramParameters();
       params._response_column = "diagnosis";
       params._train = trainF._key;
-      params._infogram_algorithm = InfoGramModel.InfoGramParameters.Algorithm.gbm;
-      params._ntop = 50;
+      params._infogram_algorithm = InfogramModel.InfogramParameters.Algorithm.gbm;
+      params._top_n_features = 50;
       params._seed = 12345;
 
-      InfoGramModel infogramModel = new InfoGram(params).trainModel().get();
+      InfogramModel infogramModel = new Infogram(params).trainModel().get();
       Scope.track_generic(infogramModel);
  //     assertEqualCMIRel(deepRel, deepCMI, infogramModel._output, TOLERANCE);
     } finally {
@@ -246,16 +244,16 @@ public class InfoGramPipingTest extends TestUtil {
       Frame trainF = Scope.track(parseTestFile("smalldata/admissibleml_test/Bank_Personal_Loan_Modelling.csv"));
       trainF.replace(9, trainF.vec("Personal Loan").toCategoricalVec()).remove();
       DKV.put(trainF);
-      InfoGramModel.InfoGramParameters params = new InfoGramModel.InfoGramParameters();
+      InfogramModel.InfogramParameters params = new InfogramModel.InfogramParameters();
       params._response_column = "Personal Loan";
       params._train = trainF._key;
-      params._sensitive_attributes = new String[]{"Age","ZIP Code"};
-      params._infogram_algorithm = InfoGramModel.InfoGramParameters.Algorithm.gbm;
+      params._protected_columns = new String[]{"Age","ZIP Code"};
+      params._infogram_algorithm = InfogramModel.InfogramParameters.Algorithm.gbm;
       params._ignored_columns = new String[]{"ID"};
-      params._ntop = 50;
+      params._top_n_features = 50;
       params._seed = 12345;
 
-      InfoGramModel infogramModel = new InfoGram(params).trainModel().get();
+      InfogramModel infogramModel = new Infogram(params).trainModel().get();
       Scope.track_generic(infogramModel);
       assertEqualCMIRel(deepRel, deepCMI, infogramModel._output, TOLERANCE);
     } finally {
@@ -275,7 +273,7 @@ public class InfoGramPipingTest extends TestUtil {
       params._response_column = "target";
       params._train = trainF._key;
       params._infogram_algorithm = InfoGramModel.InfoGramParameters.Algorithm.gbm;
-      params._ntop = 50;
+      params._top_n_features = 50;
       params._seed = 12345;
 
       InfoGramModel infogramModel = new InfoGram(params).trainModel().get();
@@ -302,7 +300,7 @@ public class InfoGramPipingTest extends TestUtil {
       params._response_column = "APPETENCY";
       params._train = trainF._key;
       params._infogram_algorithm = InfoGramModel.InfoGramParameters.Algorithm.gbm;
-      params._ntop = 50;
+      params._top_n_features = 50;
       params._seed = 12345;
 
       InfoGramModel infogramModel = new InfoGram(params).trainModel().get();
@@ -329,7 +327,7 @@ public class InfoGramPipingTest extends TestUtil {
       params._response_column = "class";
       params._train = trainF._key;
       params._infogram_algorithm = InfoGramModel.InfoGramParameters.Algorithm.gbm;
-      params._ntop = 50;
+      params._top_n_features = 50;
       params._seed = 12345;
 
       InfoGramModel infogramModel = new InfoGram(params).trainModel().get();
@@ -344,7 +342,7 @@ public class InfoGramPipingTest extends TestUtil {
     }
   }*/
 
-  public static void assertEqualCMIRel(double[] deepRel, double[] deepCMI, InfoGramModel.InfoGramModelOutput output,
+  public static void assertEqualCMIRel(double[] deepRel, double[] deepCMI, InfogramModel.InfogramModelOutput output,
                                        double tolerance) {
     java.util.Arrays.sort(deepRel);
     java.util.Arrays.sort(deepCMI);
@@ -364,7 +362,7 @@ public class InfoGramPipingTest extends TestUtil {
   }
 
   public static void assertEqualCMIRel(List<String> predictorNames, double[] deepRel, double[] deepCMI,
-                                       InfoGramModel.InfoGramModelOutput output, double tolerance, List<Integer> excludeList) {
+                                       InfogramModel.InfogramModelOutput output, double tolerance, List<Integer> excludeList) {
     int numPred = predictorNames.size();
     String[] predictorWNames = output._all_predictor_names;
     double[] modelRelevance = output._relevance;

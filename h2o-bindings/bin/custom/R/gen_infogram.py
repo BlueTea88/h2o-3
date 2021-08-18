@@ -25,7 +25,7 @@ if (!missing(infogram_algorithm_params))
     parms$infogram_algorithm_params <- as.character(toJSON(infogram_algorithm_params, pretty = TRUE))
 """,
     with_model="""
-# Convert infogram_algorithm_params back to list if not NULL
+# Convert infogram_algorithm_params back to list if not NULL, added after obtaining model
 if (!missing(infogram_algorithm_params)) {
     model@parameters$infogram_algorithm_params <- list(fromJSON(model@parameters$infogram_algorithm_params))[[1]] #Need the `[[ ]]` to avoid a nested list
 }
@@ -89,11 +89,11 @@ h2o.get_all_predictor_names<-function(object) {
 # modify this for infogram.
 doc = dict(
     preamble="""
-Given a sensitive/unfair predictors list, InfoGram will add all predictors that contains information on the 
- sensitive/unfair predictors list to the sensitive/unfair predictors list.  It will return a set of predictors that
- do not contain information on the sensitive/unfair list and hence user can build a fair model.  If no sensitive/unfair
- predictor list is given, InfoGram will return a list of core predictors that should be used to build a final model.
- InfoGram can significantly cut down the number of predictors needed to build a model and hence will build a simple
+Given a protected_columns list, Infogram will add all predictors that contains information on the 
+ protected predictors to the protected_columns list.  It will return a set of predictors that
+ do not contain information on the sensitive/unfair list and hence user can build a fair model.  If no 
+ protected_columns list is given, Infogram will return a list of core predictors that should be used to build a final model.
+ Infogram can significantly cut down the number of predictors needed to build a model and hence will build a simple
  model that is more interpretable, less susceptible to overfitting, runs faster while providing similar accuracy
  as models built using all attributes.
     """,

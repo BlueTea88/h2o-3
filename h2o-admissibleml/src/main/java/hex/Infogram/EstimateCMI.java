@@ -1,4 +1,4 @@
-package hex.InfoGram;
+package hex.Infogram;
 
 import water.MRTask;
 import water.fvec.Chunk;

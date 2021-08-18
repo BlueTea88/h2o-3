@@ -2,7 +2,7 @@ from __future__ import print_function
 import os
 import sys
 
-from h2o.estimators.infogram import H2OInfoGramEstimator
+from h2o.estimators.infogram import H2OInfogram
 
 sys.path.insert(1, os.path.join("..","..",".."))
 import h2o
@@ -24,7 +24,7 @@ def test_infogram_iris():
     x = fr.names
     x.remove(target)
     
-    infogram_model = H2OInfoGramEstimator(seed = 12345, distribution = 'multinomial') # build infogram model with default settings
+    infogram_model = H2OInfogram(seed = 12345, distribution = 'multinomial') # build infogram model with default settings
     infogram_model.train(x=x, y=target, training_frame=fr)
         
     # make sure frame returning all predictors, relevance and cmi contains correct value

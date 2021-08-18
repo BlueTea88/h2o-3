@@ -20,7 +20,7 @@ infogramUIUC <- function() {
                       0.44469423, 0.41195756, 0.35604507, 0.14960576, 0.11973009, 0.10654662, 0.12172179, 0.12809776, 
                       0.11255243, 0.28748429, 0.24735238, 0.23491307, 0.19843329, 0.17768404, 0.17737053))
     Log.info("Build the model")
-    mFV <- h2o.infogram(y=Y, x=X, training_frame=bhexFV,  seed=12345, ntop=50, sensitive_attributes = c("SEX", "AGE"))
+    mFV <- h2o.infogram(y=Y, x=X, training_frame=bhexFV,  seed=12345, top_n_features=50, protected_columns = c("SEX", "AGE"))
     relCMIFrame <- h2o.get_relevance_cmi_frame(mFV) # get frames containing relevance and cmi
     frameCMI <- sort(as.vector(t(relCMIFrame[,3])))
     frameRel <- sort(as.vector(t(relCMIFrame[,2])))
@@ -38,14 +38,13 @@ infogramUIUC <- function() {
     
     # model built with different parameters and their relevance and cmi to be different
     gbm_params <- list(ntrees=3)
-    glm_params <- list(family='binomial')
     
-    mFVNew <- h2o.infogram(y=Y, x=X, training_frame=bhexFV,  seed=12345, ntop=50, infogram_algorithm='gbm', 
-                           infogram_algorithm_params=gbm_params, model_algorithm='glm', model_algorithm_params=glm_params)
+    mFVNew <- h2o.infogram(y=Y, x=X, training_frame=bhexFV,  seed=12345, top_n_features=50, , protected_columns = c("SEX", "AGE"), infogram_algorithm='gbm', 
+                           infogram_algorithm_params=gbm_params)
     admissibleCMINew <- sort(h2o.get_admissible_cmi(mFVNew))
     admissibleRelNew <- sort(h2o.get_admissible_relevance(mFVNew))
-    expect_true((admissibleCMINew[1] - admissibleCMI[1]) > 0.1) # CMI and relevance should not equal
-    expect_true((admissibleRelNew[1] - admissibleRel[1]) > 0.1)
+    expect_true((admissibleCMINew[1] - admissibleCMI[1]) > 0.001) # CMI and relevance should not equal
+    expect_true((admissibleRelNew[1] - admissibleRel[1]) > 0.001)
 }
 
 doTest("Infogram: UIUC data fair infogram", infogramUIUC)

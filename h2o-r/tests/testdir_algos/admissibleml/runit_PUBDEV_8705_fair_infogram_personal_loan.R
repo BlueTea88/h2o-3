@@ -15,7 +15,7 @@ infogramPersonalLoan <- function() {
                       0.002187174, 0.046872455, 0.004976263, 0.004307822))
     Log.info("Build the model")
     mFV <- h2o.infogram(y = Y, x = X, training_frame = bhexFV, distribution = "bernoulli", seed = 12345, 
-                        sensitive_attributes=c("Age","ZIP Code"))
+                        protected_columns=c("Age","ZIP Code"))
     relCMIFrame <- h2o.get_relevance_cmi_frame(mFV) # get frames containing relevance and cmi
     frameCMI <- sort(as.vector(t(relCMIFrame[,3])))
     frameRel <- sort(as.vector(t(relCMIFrame[,2])))

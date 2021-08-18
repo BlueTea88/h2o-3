@@ -37,9 +37,9 @@ Supervised
     :show-inheritance:
     :members:
 
-:mod:`H2OInfoGramEstimator`
----------------------------
-.. autoclass:: h2o.estimators.infogram.H2OInfoGramEstimator
+:mod:`H2OInfogram`
+------------------
+.. autoclass:: h2o.estimators.infogram.H2OInfogram
     :show-inheritance:
     :members:
 

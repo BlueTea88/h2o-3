@@ -1,4 +1,4 @@
-package hex.InfoGram;
+package hex.Infogram;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -21,14 +21,14 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.IntStream;
 
-import static hex.InfoGram.InfoGramModel.InfoGramParameters.Algorithm.glm;
-import static hex.InfoGram.InfoGramUtils.setGLMFamilyParams;
+import static hex.Infogram.InfogramModel.InfogramParameters.Algorithm.glm;
+import static hex.Infogram.InfogramUtils.setGLMFamilyParams;
 import static hex.genmodel.utils.DistributionFamily.bernoulli;
 import static hex.genmodel.utils.DistributionFamily.multinomial;
 import static hex.glm.GLMModel.GLMParameters.Family.binomial;
 import static water.util.ArrayUtils.sort;
 
-public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramParameters, InfoGramModel.InfoGramModelOutput> {
+public class InfogramModel extends Model<InfogramModel, InfogramModel.InfogramParameters, InfogramModel.InfogramModelOutput> {
   /**
    * Full constructor
    *
@@ -36,7 +36,7 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
    * @param parms
    * @param output
    */
-  public InfoGramModel(Key<InfoGramModel> selfKey, InfoGramModel.InfoGramParameters parms, InfoGramModelOutput output) {
+  public InfogramModel(Key<InfogramModel> selfKey, InfogramParameters parms, InfogramModelOutput output) {
     super(selfKey, parms, output);
   }
 
@@ -55,27 +55,27 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
 
   @Override
   protected double[] score0(double[] data, double[] preds) {
-    throw new UnsupportedOperationException("InfoGram does not support scoring on data.  It only provides information" +
+    throw new UnsupportedOperationException("Infogram does not support scoring on data.  It only provides information" +
             " on predictors and choose admissible features for users.  Users can take the admissible features, build" +
             "their own model and score with that model.");
   }
 
   @Override
   public Frame score(Frame fr, String destinationKey, Job j, boolean computeMetrics, CFuncRef customMetricFunc) {
-    throw new UnsupportedOperationException("InfoGram does not support scoring on data.  It only provides information" +
+    throw new UnsupportedOperationException("Infogram does not support scoring on data.  It only provides information" +
             " on predictors and choose admissible features for users.  Users can take the admissible features, build" +
             "their own model and score with that model.");
   }
 
-  public static class InfoGramParameters extends Model.Parameters {
+  public static class InfogramParameters extends Model.Parameters {
     public Algorithm _infogram_algorithm = Algorithm.gbm;     // default to GBM
     public String _infogram_algorithm_params = new String();   // store user specific parameters for chosen algorithm
-    public String[] _sensitive_attributes = null;     // store sensitive features to be excluded from final model
+    public String[] _protected_columns = null;     // store features to be excluded from final model
     public double _conditional_info_threshold = 0.1;  // default set by Deep
     public double _varimp_threshold = 0.1;            // default set by Deep
     public double _data_fraction = 1.0;              // fraction of data to use to calculate infogram
     public Model.Parameters _infogram_algorithm_parameters;   // store parameters of chosen algorithm
-    public int _ntop = 50;                           // if 0 consider all predictors, otherwise, consider topk predictors
+    public int _top_n_features = 50;                           // if 0 consider all predictors, otherwise, consider topk predictors
     public boolean _compute_p_values = false;                   // if true, will calculate p-value
     public int _nparallelism = 0;
 
@@ -90,7 +90,7 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
 
     @Override
     public String algoName() {
-      return "InfoGram";
+      return "Infogram";
     }
 
     @Override
@@ -100,7 +100,7 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
 
     @Override
     public String javaName() {
-      return InfoGramModel.class.getName();
+      return InfogramModel.class.getName();
     }
 
     @Override
@@ -112,15 +112,15 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
      * This method performs the following functions:
      * 1. extract the algorithm specific parameters from _algorithm_params to _algorithm_parameters which will be 
      * one of GBMParameters, DRFParameters, DeepLearningParameters, GLMParameters.
-     * 2. Next, it will copy the parameters that are common to all algorithms from InfoGramParameters to 
+     * 2. Next, it will copy the parameters that are common to all algorithms from InfogramParameters to 
      * _algorithm_parameters.
      */
     /**
      * This method performs the following functions:
-     * 1. when fillInfoGram = true, it will extract the algorithm specific parameters from _info_algorithm_params to
+     * 1. it will extract the algorithm specific parameters from _info_algorithm_params to
      * infogram_algorithm_parameters which will be one of GBMParameters, DRFParameters, DeepLearningParameters or 
      * GLMParameters.  This will be used to build models and extract the infogram.
-     * 2. Next, it will copy the parameters that are common to all algorithms from InfoGramParameters to 
+     * 2. Next, it will copy the parameters that are common to all algorithms from InfogramParameters to 
      * _algorithm_parameters.
      */
     public void fillImpl() {
@@ -189,7 +189,7 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
               .fillFromParms(p, true)
               .createAndFillImpl();
 
-      copyInfoGramParams(excludeList); // copy over InfoGramParameters that are applicable to model specific algos
+      copyInfoGramParams(excludeList); // copy over InfogramParameters that are applicable to model specific algos
     }
 
     public void copyInfoGramParams(List<String> excludeList) {
@@ -209,7 +209,7 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
     }
   }
 
-  public static class InfoGramModelOutput extends Model.Output {
+  public static class InfogramModelOutput extends Model.Output {
     public double[] _admissible_cmi;  // conditional info for admissible features in _admissible_features
     public double[] _admissible_cmi_raw;  // conditional info for admissible features in _admissible_features raw
     public double[] _admissible_relevance;  // varimp values for admissible features in _admissible_features
@@ -230,10 +230,10 @@ public class InfoGramModel extends Model<InfoGramModel, InfoGramModel.InfoGramPa
       } else if (multinomial.equals(_distribution)) {
         return ModelCategory.Multinomial;
       }
-      throw new IllegalArgumentException("InfoGram currently only support binomial and multinomial classification");
+      throw new IllegalArgumentException("Infogram currently only support binomial and multinomial classification");
     }
 
-    public InfoGramModelOutput(InfoGram b) {
+    public InfogramModelOutput(Infogram b) {
       super(b);
       if (glm.equals(b._parms._infogram_algorithm)) {
         if (binomial.equals(((GLMModel.GLMParameters) b._parms._infogram_algorithm_parameters)._family))

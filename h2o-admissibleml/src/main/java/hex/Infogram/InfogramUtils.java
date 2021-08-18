@@ -1,8 +1,7 @@
-package hex.InfoGram;
+package hex.Infogram;
 
 import hex.Model;
 import hex.ModelBuilder;
-import hex.ModelMetrics;
 import hex.SplitFrame;
 import hex.deeplearning.DeepLearningModel;
 import hex.glm.GLMModel;
@@ -19,7 +18,7 @@ import water.Scope;
 import water.api.schemas3.ModelParametersSchemaV3;
 import water.fvec.Frame;
 import water.util.TwoDimTable;
-import static hex.InfoGram.InfoGramModel.InfoGramParameters;
+import static hex.Infogram.InfogramModel.InfogramParameters;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +28,7 @@ import java.util.stream.DoubleStream;
 import static hex.glm.GLMModel.GLMParameters;
 import static hex.glm.GLMModel.GLMParameters.Family.binomial;
 
-public class InfoGramUtils {
+public class InfogramUtils {
 
   /**
    * This method will take the columns of _parms.train().  It will then remove the response, any columns in 
@@ -39,11 +38,11 @@ public class InfoGramUtils {
    * @param _parms
    * @return
    */
-  public static String[] extractPredictors(InfoGramModel.InfoGramParameters _parms) {
+  public static String[] extractPredictors(InfogramParameters _parms) {
     List<String> colNames = new ArrayList<>(Arrays.asList(_parms.train().names()));
     List<String> excludeCols = new ArrayList<>(Arrays.asList(_parms._response_column));
-    if (!(_parms._sensitive_attributes == null))
-      excludeCols.addAll(Arrays.asList(_parms._sensitive_attributes));  // remove sensitive attributes
+    if (!(_parms._protected_columns == null))
+      excludeCols.addAll(Arrays.asList(_parms._protected_columns));  // remove sensitive attributes
     if (_parms._weights_column != null)
       excludeCols.add(_parms._weights_column);  // remove weight
     if (_parms._offset_column != null)
@@ -62,9 +61,9 @@ public class InfoGramUtils {
    * @param eligiblePredictors
    * @return
    */
-  public static String[] extractTopKPredictors(InfoGramModel.InfoGramParameters parms, Frame trainFrame, 
+  public static String[] extractTopKPredictors(InfogramParameters parms, Frame trainFrame,
                                                String[] eligiblePredictors, List<Key<Frame>> generatedFrameKeys) {
-    if (parms._ntop >= eligiblePredictors.length) return eligiblePredictors;
+    if (parms._top_n_features >= eligiblePredictors.length) return eligiblePredictors;
     Frame topTrain = extractTrainingFrame(parms, eligiblePredictors, 1, trainFrame);
     generatedFrameKeys.add(topTrain._key);
     parms._infogram_algorithm_parameters._train = topTrain._key;
@@ -72,13 +71,13 @@ public class InfoGramUtils {
     Model builtModel = (Model) builder.trainModel().get();
     Scope.track_generic(builtModel);
     TwoDimTable varImp = extractVarImp(parms._infogram_algorithm, builtModel);
-    String[] ntopPredictors = new String[parms._ntop];
+    String[] ntopPredictors = new String[parms._top_n_features];
     String[] rowHeaders = varImp.getRowHeaders();
-    System.arraycopy(rowHeaders, 0, ntopPredictors, 0, parms._ntop);
+    System.arraycopy(rowHeaders, 0, ntopPredictors, 0, parms._top_n_features);
     return ntopPredictors;
   }
 
-  public static TwoDimTable extractVarImp(InfoGramModel.InfoGramParameters.Algorithm algo, Model model) {
+  public static TwoDimTable extractVarImp(InfogramParameters.Algorithm algo, Model model) {
     switch (algo) {
       case gbm : return ((GBMModel) model)._output._variable_importances;
       case glm : return ((GLMModel) model)._output._variable_importances;
@@ -101,7 +100,7 @@ public class InfoGramUtils {
    * @param
    * @return
    */
-  public static Frame extractTrainingFrame(InfoGramModel.InfoGramParameters parms, String[] sensitivePredictors, double dataFraction,
+  public static Frame extractTrainingFrame(InfogramParameters parms, String[] sensitivePredictors, double dataFraction,
                                            Frame trainFrame) {
     if (dataFraction < 1) {  // only use a fraction training data for speedup
       SplitFrame sf = new SplitFrame(trainFrame, new double[]{parms._data_fraction, 1-parms._data_fraction},
@@ -170,7 +169,7 @@ public class InfoGramUtils {
   }
 
   public static Model.Parameters[] buildModelParameters(Frame[] trainingFrames, Model.Parameters infoParams,
-                                                        int numModels, InfoGramModel.InfoGramParameters.Algorithm algoName) {
+                                                        int numModels, InfogramParameters.Algorithm algoName) {
     ModelParametersSchemaV3 paramsSchema;
     switch (algoName) {
       case glm:
@@ -222,7 +221,7 @@ public class InfoGramUtils {
         DKV.remove(oneFrameKey);
   }
 
-  public static void setGLMFamilyParams(GLMParameters glmParam, InfoGramParameters infoGramParam) {
+  public static void setGLMFamilyParams(GLMParameters glmParam, InfogramParameters infoGramParam) {
     switch (infoGramParam._distribution) {
       case bernoulli:
         glmParam._family = binomial;

@@ -1,14 +1,14 @@
 package hex.schemas;
 
-import hex.InfoGram.InfoGramModel;
+import hex.Infogram.InfogramModel;
 import water.api.API;
 import water.api.schemas3.ModelOutputSchemaV3;
 import water.api.schemas3.ModelSchemaV3;
 
 
-public class InfoGramModelV3 extends ModelSchemaV3<InfoGramModel, InfoGramModelV3, InfoGramModel.InfoGramParameters,
-        InfoGramV3.InfoGramParametersV3, InfoGramModel.InfoGramModelOutput, InfoGramModelV3.InfoGramModelOutputV3> {
-  public static final class InfoGramModelOutputV3 extends ModelOutputSchemaV3<InfoGramModel.InfoGramModelOutput, InfoGramModelOutputV3> {
+public class InfogramModelV3 extends ModelSchemaV3<InfogramModel, InfogramModelV3, InfogramModel.InfogramParameters,
+        InfogramV3.InfogramParametersV3, InfogramModel.InfogramModelOutput, InfogramModelV3.InfogramModelOutputV3> {
+  public static final class InfogramModelOutputV3 extends ModelOutputSchemaV3<InfogramModel.InfogramModelOutput, InfogramModelOutputV3> {
     @API(help="Array of conditional mutual information for admissible features normalized to 0.0 and 1.0", 
             direction = API.Direction.OUTPUT)
     public double[] admissible_cmi;  // conditional mutual info for admissible features in _admissible_features
@@ -43,13 +43,13 @@ public class InfoGramModelV3 extends ModelSchemaV3<InfoGramModel, InfoGramModelV
     String relevance_cmi_key;
   }
 
-  public InfoGramV3.InfoGramParametersV3 createParametersSchema() { return new InfoGramV3.InfoGramParametersV3(); }
+  public InfogramV3.InfogramParametersV3 createParametersSchema() { return new InfogramV3.InfogramParametersV3(); }
 
-  public InfoGramModelOutputV3 createOutputSchema() { return new InfoGramModelOutputV3(); }
+  public InfogramModelOutputV3 createOutputSchema() { return new InfogramModelOutputV3(); }
 
   @Override
-  public InfoGramModel createImpl() {
-    InfoGramModel.InfoGramParameters parms = parameters.createImpl();
-    return new InfoGramModel(model_id.key(), parms, null);
+  public InfogramModel createImpl() {
+    InfogramModel.InfogramParameters parms = parameters.createImpl();
+    return new InfogramModel(model_id.key(), parms, null);
   }
 }
