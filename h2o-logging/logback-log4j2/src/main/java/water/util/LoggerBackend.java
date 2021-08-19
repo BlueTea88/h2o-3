@@ -57,8 +57,7 @@ public class LoggerBackend {
         } else {
             try {
                 reconfigureLog4J();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 System.err.println("ERROR: failed in createLog4j, exiting now.");
                 e.printStackTrace();
                 return null;
@@ -84,13 +83,13 @@ public class LoggerBackend {
                 .addAttribute("target", "SYSTEM_OUT")
                 .add(layoutComponentBuilder));
 
-        builder.add(newRollingFileAppenderComponent(builder, "R1", "1MB", _getLogFilePath.apply("trace"), pattern, Level.TRACE, 3));
-        builder.add(newRollingFileAppenderComponent(builder, "R2", _maxLogFileSize, _getLogFilePath.apply("debug"), pattern, Level.DEBUG, 3));
-        builder.add(newRollingFileAppenderComponent(builder, "R3", _maxLogFileSize, _getLogFilePath.apply("info"), pattern, Level.INFO, 3));
-        builder.add(newRollingFileAppenderComponent(builder, "R4", "256KB", _getLogFilePath.apply("warn"), pattern, Level.WARN, 3));
-        builder.add(newRollingFileAppenderComponent(builder, "R5", "256KB", _getLogFilePath.apply("error"), pattern, Level.ERROR, 3));
-        builder.add(newRollingFileAppenderComponent(builder, "R6", "256KB", _getLogFilePath.apply("fatal"), pattern, Level.FATAL, 3));
-        builder.add(newRollingFileAppenderComponent(builder, "HTTPD", "1MB", _getLogFilePath.apply("httpd"), "%d{ISO8601} " + patternTail, Level.TRACE, 3));
+        builder.add(newRollingFileAppenderComponent(builder, "R1", "1MB", _getLogFilePath.apply("trace"), pattern, Level.TRACE));
+        builder.add(newRollingFileAppenderComponent(builder, "R2", _maxLogFileSize, _getLogFilePath.apply("debug"), pattern, Level.DEBUG));
+        builder.add(newRollingFileAppenderComponent(builder, "R3", _maxLogFileSize, _getLogFilePath.apply("info"), pattern, Level.INFO));
+        builder.add(newRollingFileAppenderComponent(builder, "R4", "256KB", _getLogFilePath.apply("warn"), pattern, Level.WARN));
+        builder.add(newRollingFileAppenderComponent(builder, "R5", "256KB", _getLogFilePath.apply("error"), pattern, Level.ERROR));
+        builder.add(newRollingFileAppenderComponent(builder, "R6", "256KB", _getLogFilePath.apply("fatal"), pattern, Level.FATAL));
+        builder.add(newRollingFileAppenderComponent(builder, "HTTPD", "1MB", _getLogFilePath.apply("httpd"), "%d{ISO8601} " + patternTail, Level.TRACE));
 
         // configure loggers:
         List<AppenderRefComponentBuilder> appenderReferences = new ArrayList();
@@ -127,14 +126,14 @@ public class LoggerBackend {
         Configurator.reconfigure(builder.build());
     }
 
-    AppenderComponentBuilder newRollingFileAppenderComponent(ConfigurationBuilder builder, String name, String sizeBasedTriggeringPolicyValue,  String fileNameValue, String filePatternValue, Level thresholdFilterLevel, int rolloverStrategyValue) {
+    AppenderComponentBuilder newRollingFileAppenderComponent(ConfigurationBuilder builder, String name, String sizeBasedTriggeringPolicyValue,  String fileNameValue, String filePatternValue, Level thresholdFilterLevel) {
         ComponentBuilder triggeringPolicy = builder.newComponent("Policies")
                 .addComponent(builder.newComponent("SizeBasedTriggeringPolicy").addAttribute("size", sizeBasedTriggeringPolicyValue));
         LayoutComponentBuilder layoutBuilder = builder.newLayout("PatternLayout")
                 .addAttribute("pattern", filePatternValue);
         FilterComponentBuilder thresholdFilter = builder.newFilter("ThresholdFilter", Filter.Result.ACCEPT, Filter.Result.NEUTRAL)
-                .addAttribute("level", L4J_LOGGING_LVLS[_level].toString());
-        ComponentBuilder rolloverStrategy = builder.newComponent("DefaultRolloverStrategy").addAttribute("max", rolloverStrategyValue);
+                .addAttribute("level", thresholdFilterLevel.toString());
+        ComponentBuilder rolloverStrategy = builder.newComponent("DefaultRolloverStrategy").addAttribute("max", 3);
 
         AppenderComponentBuilder appenderBuilder = builder.newAppender(name, "RollingFile")
                 .addAttribute("fileName", fileNameValue)
@@ -155,5 +154,4 @@ public class LoggerBackend {
         loggerComponentBuilder.addAttribute("additivity", false);
         return loggerComponentBuilder;
     }
-    
 }
