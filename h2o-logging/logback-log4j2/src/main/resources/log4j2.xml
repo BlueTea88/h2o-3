@@ -4,120 +4,12 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
-        
-        <RollingFile name="R1" fileName="out/logs/app-trace.log"  filePattern="out/logs/app-trace-%d{MM-dd-yyyy}.log.gz" >
-            <ThresholdFilter level="TRACE"/>
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
-            <Policies>
-                <SizeBasedTriggeringPolicy size="1 MB" />
-            </Policies>
-            <DefaultRolloverStrategy max="3"/>
-        </RollingFile>
-        
-        <RollingFile name="R2" fileName="out/logs/app-debug.log"  filePattern="out/logs/app-debug-%d{MM-dd-yyyy}.log.gz">
-            <ThresholdFilter level="DEBUG"/>
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
-            <Policies>
-                <SizeBasedTriggeringPolicy size="3 MB" />
-            </Policies>
-            <DefaultRolloverStrategy max="3"/>
-        </RollingFile>
-        
-        <RollingFile name="R3" fileName="out/logs/app-info.log"  filePattern="out/logs/app-info-%d{MM-dd-yyyy}.log.gz">
-            <ThresholdFilter level="INFO"/>
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
-            <Policies>
-                <SizeBasedTriggeringPolicy size="3 MB" />
-            </Policies>
-            <DefaultRolloverStrategy max="3"/>
-        </RollingFile>
-        
-        <RollingFile name="R4" fileName="out/logs/app-warn.log"  filePattern="out/logs/app-warn-%d{MM-dd-yyyy}.log.gz">
-            <ThresholdFilter level="WARN"/>
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
-            <Policies>
-                <SizeBasedTriggeringPolicy size="256KB" />
-            </Policies>
-            <DefaultRolloverStrategy max="3"/>
-        </RollingFile>
-        
-        <RollingFile name="R5" fileName="out/logs/app-error.log"  filePattern="out/logs/app-error-%d{MM-dd-yyyy}.log.gz">
-            <ThresholdFilter level="ERROR"/>
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
-            <Policies>
-                <SizeBasedTriggeringPolicy size="256KB" />
-            </Policies>
-            <DefaultRolloverStrategy max="3"/>
-        </RollingFile>
-        
-        <RollingFile name="R6" fileName="out/logs/app-fatal.log"  filePattern="out/logs/app-fatal-%d{MM-dd-yyyy}.log.gz">
-            <ThresholdFilter level="FATAL"/>
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
-            <Policies>
-                <SizeBasedTriggeringPolicy size="256KB" />
-            </Policies>
-            <DefaultRolloverStrategy max="3"/>
-        </RollingFile>
-        
-        <RollingFile name="HTTPD" fileName="out/logs/app-httpd.log"  filePattern="out/logs/app-httpd-%d{MM-dd-yyyy}.log.gz">
-            <ThresholdFilter level="TRACE"/>
-            <PatternLayout pattern="%d{ISO8601} "/>
-            <Policies>
-                <SizeBasedTriggeringPolicy size="1 MB" />
-            </Policies>
-            <DefaultRolloverStrategy max="3"/>
-        </RollingFile>
     </Appenders>
     
     <Loggers>
         <Root level="info">
             <AppenderRef ref="Console"/>
         </Root>
-        <Logger name="hex" additivity="false" level="info">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="R1"/>
-            <AppenderRef ref="R2"/>
-            <AppenderRef ref="R3"/>
-            <AppenderRef ref="R4"/>
-            <AppenderRef ref="R5"/>
-            <AppenderRef ref="R6"/>
-        </Logger>
-        <Logger name="water" additivity="false" level="info">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="R1"/>
-            <AppenderRef ref="R2"/>
-            <AppenderRef ref="R3"/>
-            <AppenderRef ref="R4"/>
-            <AppenderRef ref="R5"/>
-            <AppenderRef ref="R6"/>
-        </Logger>
-        <Logger name="ai.h2o" additivity="false" level="info">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="R1"/>
-            <AppenderRef ref="R2"/>
-            <AppenderRef ref="R3"/>
-            <AppenderRef ref="R4"/>
-            <AppenderRef ref="R5"/>
-            <AppenderRef ref="R6"/>
-        </Logger>
     </Loggers>
-    
-    <Properties>
-        <Property name="log4j.logger.water.api.RequestServer" value="TRACE, HTTPD"/>
-        <Property name="log4j.additivity.water.api.RequestServer" value="false"/>
-
-        <Property name="log4j.logger.org.apache.http" value="WARN"/>
-        <Property name="log4j.logger.com.amazonaws" value="WARN"/>
-
-<!--        // Turn down the logging for some class hierarchies.-->
-        <Property name="log4j.logger.org.apache.hadoop" value="WARN"/>
-        <Property name="log4j.logger.com.amazonaws" value="WARN"/>
-        <Property name="log4j.logger.org.jets3t.service" value="WARN"/>
-        <Property name="log4j.logger.org.reflections.Reflections" value="ERROR"/>
-        <Property name="log4j.logger.com.brsanthu.googleanalytics" value="ERROR"/>
-
-<!--        // Turn down the logging for external libraries that Orc parser depends on-->
-        <Property name="log4j.logger.org.apache.hadoop.util.NativeCodeLoader" value="ERROR"/>
-    </Properties>
 
 </Configuration>
