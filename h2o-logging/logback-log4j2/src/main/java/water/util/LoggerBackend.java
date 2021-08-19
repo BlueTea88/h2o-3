@@ -90,7 +90,7 @@ public class LoggerBackend {
         builder.addProperty("log4j.logger.org.apache.hadoop.util.NativeCodeLoader", "ERROR");
         
 
-        Configurator.initialize(builder.build());
+        Configurator.reconfigure(builder.build());
     }
 
     AppenderComponentBuilder newRollingFileAppenderComponent(ConfigurationBuilder builder, String name, String sizeBasedTriggeringPolicyValue,  String fileNameValue, String filePatternValue, Level thresholdFilterLevel, int rolloverStrategyValue) {
