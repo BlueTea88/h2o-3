@@ -7,6 +7,9 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.builder.api.*;
 import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -31,7 +34,38 @@ public class LoggerBackend {
     public Function<String, String> _getLogFilePath;
 
     public Logger createLog4j() {
-        reconfigureLog4J();
+        String h2oLog4jConfiguration = System.getProperty("h2o.log4j.configuration");
+
+        if (h2oLog4jConfiguration != null) {
+            // Try to configure via a file on local filesystem
+            File file = new File(h2oLog4jConfiguration);
+            if (file.exists()) {
+                Configurator.reconfigure(file.toURI());
+            } else {
+                // Try to load file via classloader resource (e.g., from classpath)
+                URL confUrl = LoggerBackend.class.getClassLoader().getResource(h2oLog4jConfiguration);
+                if (confUrl != null) {
+                    try {
+                        Configurator.reconfigure(confUrl.toURI());
+                    } catch (URISyntaxException e) {
+                        System.err.println("ERROR: failed in createLog4j, exiting now.");
+                        e.printStackTrace();
+                        return null;
+                    }
+                }
+            }
+        } else {
+            try {
+                reconfigureLog4J();
+            }
+            catch (Exception e) {
+                System.err.println("ERROR: failed in createLog4j, exiting now.");
+                e.printStackTrace();
+                return null;
+            }
+
+            // TODO: hadoop and sparkling water cases
+        }
         return Logger.getLogger("water.default");
     }
 
