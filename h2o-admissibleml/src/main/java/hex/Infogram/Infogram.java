@@ -181,7 +181,7 @@ public class Infogram extends ModelBuilder<InfogramModel, InfogramModel.Infogram
         _cmiRelKey = model._output.generateCMIRelFrame();
         model._output.extractAdmissibleFeatures(_varImp, model._output._all_predictor_names, _cmi, _cmiRaw,
                 _parms._conditional_info_threshold, _parms._varimp_threshold);  // extract admissible information model output
-        _job.update(0, "Infogram building completed...");
+        _job.update(1, "Infogram building completed...");
         model.update(_job);
       } finally {
         DKV.remove(_baseOrSensitiveFrame._key);
@@ -204,11 +204,14 @@ public class Infogram extends ModelBuilder<InfogramModel, InfogramModel.Infogram
         for (int outerInd = 0; outerInd < outerLoop; outerInd++) {
           buildModelCMINRelevance(modelCount, _parms._nparallelism, lastModelInd);
           modelCount += _parms._nparallelism;
+          _job.update(_parms._nparallelism);
         }
       }
       int leftOver = _numModels - modelCount;
-      if (leftOver > 0) // finish building the leftover models
+      if (leftOver > 0) { // finish building the leftover models
         buildModelCMINRelevance(modelCount, leftOver, lastModelInd);
+        _job.update(leftOver);
+      }
       _cmi = calculateFinalCMI(_cmiRaw, _buildCore);  // scale cmi to be from 0 to 1, ignore last one
     }
 

@@ -29,60 +29,62 @@ if (!missing(infogram_algorithm_params))
 if (!missing(infogram_algorithm_params)) {
     model@parameters$infogram_algorithm_params <- list(fromJSON(model@parameters$infogram_algorithm_params))[[1]] #Need the `[[ ]]` to avoid a nested list
 }
+infogram_model <- new("H2OInfogramModel", model_id=model@model_id)       
+model <- infogram_model                
 """,
     module="""
 #' @export   
 h2o.get_relevance_cmi_frame<- function(object) {
-  if( is(object, "H2OModel") && (object@algorithm=='infogram'))
-    return(h2o.getFrame(object@model$relevance_cmi_key))
+  if( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
+    return(h2o.getFrame(object@relevance_cmi_key))
 }
 
 #' @export 
 h2o.get_admissible_attributes<-function(object) {
-  if ( is(object, "H2OModel") && (object@algorithm=='infogram'))
-    return(object@model$admissible_features)
+  if ( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
+    return(object@admissible_features)
 }
 
 #' @export 
 h2o.get_admissible_relevance<-function(object) {
-  if ( is(object, "H2OModel") && (object@algorithm=='infogram'))
-    return(object@model$admissible_relevance)
+  if ( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
+    return(object@admissible_relevance)
 }
 
 #' @export 
 h2o.get_admissible_cmi<-function(object) {
-  if ( is(object, "H2OModel") && (object@algorithm=='infogram'))
-    return(object@model$admissible_cmi)
+  if ( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
+    return(object@admissible_cmi)
 }
 
 #' @export 
 h2o.get_admissible_cmi_raw<-function(object) {
-  if ( is(object, "H2OModel") && (object@algorithm=='infogram'))
-    return(object@model$admissible_cmi)
+  if ( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
+    return(object@admissible_cmi_raw)
 }
 
 #' @export 
 h2o.get_all_predictor_relevance<-function(object) {
-  if ( is(object, "H2OModel") && (object@algorithm=='infogram'))
-    return(object@model$relevance)
+  if ( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
+    return(object@relevance)
 }
 
 #' @export 
 h2o.get_all_predictor_cmi<-function(object) {
-  if ( is(object, "H2OModel") && (object@algorithm=='infogram'))
-    return(object@model$cmi)
+  if ( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
+    return(object@cmi)
 }
 
 #' @export 
 h2o.get_all_predictor_cmi_raw<-function(object) {
-  if ( is(object, "H2OModel") && (object@algorithm=='infogram'))
-    return(object@model$cmi_raw)
+  if ( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
+    return(object@cmi_raw)
 }
 
 #' @export 
 h2o.get_all_predictor_names<-function(object) {
-  if ( is(object, "H2OModel") && (object@algorithm=='infogram'))
-    return(object@model$all_predictor_names)
+  if ( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
+    return(object@all_predictor_names)
 }
 """
 )

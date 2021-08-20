@@ -78,7 +78,7 @@ public class InfogramModel extends Model<InfogramModel, InfogramModel.InfogramPa
     public int _top_n_features = 50;                           // if 0 consider all predictors, otherwise, consider topk predictors
     public boolean _compute_p_values = false;                   // if true, will calculate p-value
     public int _nparallelism = 0;
-
+    
     public enum Algorithm {
       AUTO,
       deeplearning,
@@ -179,6 +179,7 @@ public class InfogramModel extends Model<InfogramModel, InfogramModel.InfogramPa
         case xgboost:
           paramsSchema = new XGBoostV3.XGBoostParametersV3();
           params = new XGBoostModel.XGBoostParameters();
+          break;
         default:
           throw new UnsupportedOperationException("Unknown algo: " + algoName);
       }
