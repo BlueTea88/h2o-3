@@ -131,7 +131,7 @@ public class LoggerBackend {
                 .addComponent(builder.newComponent("SizeBasedTriggeringPolicy").addAttribute("size", sizeBasedTriggeringPolicyValue));
         LayoutComponentBuilder layoutBuilder = builder.newLayout("PatternLayout")
                 .addAttribute("pattern", filePatternValue);
-        FilterComponentBuilder thresholdFilter = builder.newFilter("ThresholdFilter", Filter.Result.ACCEPT, Filter.Result.NEUTRAL)
+        FilterComponentBuilder thresholdFilter = builder.newFilter("ThresholdFilter", Filter.Result.ACCEPT, Filter.Result.DENY)
                 .addAttribute("level", thresholdFilterLevel.toString());
         ComponentBuilder rolloverStrategy = builder.newComponent("DefaultRolloverStrategy").addAttribute("max", 3);
 
