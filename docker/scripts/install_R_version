@@ -81,8 +81,8 @@ checkRInstallLog R.install.2.log
 /usr/local/R/current/bin/R -e "chooseCRANmirror(graphics=FALSE, ind=1); \
   install.packages(c( \
     'dplyr', 'R.utils', 'AUC', 'mlbench', 'flexclust', 'randomForest', \
-    'bit64', 'HDtweedie', 'jsonlite', 'statmod', 'roxygen2', 'testthat', 'Rcpp', 'fpc', 'RUnit', \
-    'ade4', 'e1071', 'ggplot2', 'LiblineaR', 'optparse', 'uuid', 'usethis', 'plot3Drgl',  \
+    'bit64', 'HDtweedie', 'jsonlite', 'statmod', 'roxygen2', 'testthat', 'Rcpp', 'robustbase', 'fpc', 'RUnit', \
+    'ade4', 'proxy', 'e1071', 'ggplot2', 'LiblineaR', 'optparse', 'uuid', 'usethis', 'plot3Drgl',  \
     'IRdisplay', 'plotly' \
   )) \
 " 2>&1 | tee R.install.3.log
