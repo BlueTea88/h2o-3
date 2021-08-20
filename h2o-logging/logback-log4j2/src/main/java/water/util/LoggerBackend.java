@@ -137,7 +137,7 @@ public class LoggerBackend {
 
         AppenderComponentBuilder appenderBuilder = builder.newAppender(name, "RollingFile")
                 .addAttribute("fileName", fileNameValue)
-                .addAttribute("filePattern", fileNameValue.substring(0,fileNameValue.length() - 4) + "-%d{MM-dd-yyyy}.log.gz")
+                .addAttribute("filePattern", fileNameValue.substring(0, fileNameValue.length() - 4) + "-%i.log")
                 .add(thresholdFilter)
                 .addComponent(triggeringPolicy)
                 .addComponent(layoutBuilder)
