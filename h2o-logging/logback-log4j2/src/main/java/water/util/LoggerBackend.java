@@ -99,7 +99,6 @@ public class LoggerBackend {
         appenderReferences.add(builder.newAppenderRef("R4"));
         appenderReferences.add(builder.newAppenderRef("R5"));
         appenderReferences.add(builder.newAppenderRef("R6"));
-        appenderReferences.add(builder.newAppenderRef("HTTPD"));
         appenderReferences.add(builder.newAppenderRef("Console"));
         
         builder.add(newLoggerComponent(builder, "hex", appenderReferences));
@@ -108,8 +107,9 @@ public class LoggerBackend {
         builder.add(builder.newRootLogger(String.valueOf(L4J_LVLS[_level])).add(appenderReferences.get(appenderReferences.size() - 1)));
         
         // HTTPD logging
-        builder.addProperty("log4j.logger.water.api.RequestServer", "TRACE, HTTPD");
-        builder.addProperty("log4j.additivity.water.api.RequestServer", "false");
+        appenderReferences = new ArrayList();
+        appenderReferences.add(builder.newAppenderRef("HTTPD"));
+        builder.add(newLoggerComponent(builder, "water.api.RequestServer", appenderReferences));
 
         // Turn down the logging for some class hierarchies.
         builder.addProperty("log4j.logger.org.apache.http", "WARN");
