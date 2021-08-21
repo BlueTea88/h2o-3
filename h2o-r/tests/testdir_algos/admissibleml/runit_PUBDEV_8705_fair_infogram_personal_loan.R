@@ -16,20 +16,12 @@ infogramPersonalLoan <- function() {
     Log.info("Build the model")
     mFV <- h2o.infogram(y = Y, x = X, training_frame = bhexFV, distribution = "bernoulli", seed = 12345, 
                         protected_columns=c("Age","ZIP Code"))
-    relCMIFrame <- h2o.get_relevance_cmi_frame(mFV) # get frames containing relevance and cmi
-    frameCMI <- sort(as.vector(t(relCMIFrame[,3])))
-    frameRel <- sort(as.vector(t(relCMIFrame[,2])))
-    allCMI <- h2o.get_all_predictor_cmi(mFV)
-    allRel <- h2o.get_all_predictor_relevance(mFV)
-    admissibleCMI <- h2o.get_admissible_cmi(mFV)
-    admissibleRel <- h2o.get_admissible_relevance(mFV)
+    relCMIFrame <- mFV@admissible_score # get frames containing relevance and cmi
+    frameCMI <- sort(as.vector(t(relCMIFrame[,5])))
+    frameRel <- sort(as.vector(t(relCMIFrame[,4])))
     
-    expect_equal(deepCMI, sort(allCMI), tolerance=1e-6) # check result agrees with Deep's
-    expect_equal(deepRel, sort(allRel), tolerance=1e-6) 
-    expect_equal(deepCMI, frameCMI, tolerance=1e-6) # check relevance and cmi from frame agree with Deep's
+    expect_equal(deepCMI, frameCMI, tolerance=1e-6) # check result agrees with Deep's
     expect_equal(deepRel, frameRel, tolerance=1e-6) 
-    expect_true(sum(admissibleCMI >= 0.1)==length(admissibleCMI)) # check and make sure relevance and cmi >= thresholds
-    expect_true(sum(admissibleRel >= 0.1)==length(admissibleRel))
 }
 
 doTest("Infogram: Personal Load fair infogram", infogramPersonalLoan)

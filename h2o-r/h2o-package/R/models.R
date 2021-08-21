@@ -18,12 +18,8 @@ NULL
 #' @param y response
 #' @param autoencoder autoencoder flag
 .verify_dataxy <- function(data, x, y, autoencoder = FALSE) {
-  if (is(x, "H2OMultinomialModel") || is(x, "H2OBinomialModel") || is(x, "H2OOrdinalModel")) {
-     if (x@algorithm=="infogram")
-        x<-x@model$admissible_features
-     else
-        stop('if `x` is a H2OModel, it must be an infogram model.')
-  }
+   if (is(x, "H2OInfogramModel"))
+     x<-x@admissible_features
   if(!is.null(x) && !is.character(x) && !is.numeric(x)) # only check if x is not null
     stop('`x` must be column names or indices')
   if( !autoencoder )

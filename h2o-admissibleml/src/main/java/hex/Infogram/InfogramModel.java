@@ -211,10 +211,13 @@ public class InfogramModel extends Model<InfogramModel, InfogramModel.InfogramPa
   }
 
   public static class InfogramModelOutput extends Model.Output {
+    public static double CORNER_DISTANCE = Math.sqrt(2.0);
     public double[] _admissible_cmi;  // conditional info for admissible features in _admissible_features
     public double[] _admissible_cmi_raw;  // conditional info for admissible features in _admissible_features raw
     public double[] _admissible_relevance;  // varimp values for admissible features in _admissible_features
     public String[] _admissible_features; // predictors chosen that exceeds both conditional_info and varimp thresholds
+    public double[] _admissible_index;  // store distance from 1,1 corner of infogram plot
+    public double[] _admissible; // 0 if predictor is admissible and 1 otherwise
     public DistributionFamily _distribution;
     public double[] _cmi_raw; // cmi before normalization and for all predictors
     public double[] _cmi; // normalized cmi
@@ -259,7 +262,7 @@ public class InfogramModel extends Model<InfogramModel, InfogramModel.InfogramPa
         double varimp = (double) varImp.get(index, 1);
         if (varimp >= varImpThreshold) {
           int predIndex = topKList.indexOf(varRowHeaders[index]);
-          if (cmi[predIndex] > cmiThreshold) {
+          if (cmi[predIndex] >= cmiThreshold) {
             varimps.add(varimp);
             predictorCMI.add(cmi[predIndex]);
             predictorCMIRaw.add(cmiRaw[predIndex]);
@@ -276,22 +279,26 @@ public class InfogramModel extends Model<InfogramModel, InfogramModel.InfogramPa
     public Key<Frame> generateCMIRelFrame() {
       Vec.VectorGroup vg = Vec.VectorGroup.VG_LEN1;
       Vec vName = Vec.makeVec(_all_predictor_names, vg.addVec());
-      Vec vCMI = Vec.makeVec(_cmi, vg.addVec());
+      Vec vAdm = Vec.makeVec(_admissible, vg.addVec());
+      Vec vAdmIndex = Vec.makeVec(_admissible_index, vg.addVec());
       Vec vRel = Vec.makeVec(_relevance, vg.addVec());
-      Frame cmiRelFrame = new Frame(Key.<Frame>make(), new String[]{"Features", "Relevance", "CMI"},
-              new Vec[]{vName, vRel, vCMI});
+      Vec vCMI = Vec.makeVec(_cmi, vg.addVec());
+      Vec vCMIRaw = Vec.makeVec(_cmi_raw, vg.addVec());
+      Frame cmiRelFrame = new Frame(Key.<Frame>make(), new String[]{"column", "admissible", "admissible_index", 
+              "relevance", "cmi", "cmi_raw"},
+              new Vec[]{vName, vAdm, vAdmIndex, vRel, vCMI, vCMIRaw});
       DKV.put(cmiRelFrame);
       _relCmiKey = cmiRelFrame._key;
       _relevance_cmi_key = _relCmiKey.toString();
       return cmiRelFrame._key;
-
     }
     
     public void copyCMIRelevance( double[] cmiRaw, double[] cmi, String[] topKPredictors,
-                                  TwoDimTable varImp) {
+                                  TwoDimTable varImp, double cmiThreshold, double relThreshold) {
       _cmi_raw = new double[cmi.length];
       System.arraycopy(cmiRaw, 0, _cmi_raw, 0, _cmi_raw.length);
-      double[] distanceFromCorner = new double[cmi.length];
+      _admissible_index = new double[cmi.length];
+      _admissible = new double[cmi.length];
       _cmi = cmi.clone();
       _topKFeatures = topKPredictors.clone();
       _all_predictor_names = topKPredictors.clone();
@@ -302,10 +309,12 @@ public class InfogramModel extends Model<InfogramModel, InfogramModel.InfogramPa
       for (int index = 0; index < numRows; index++) { // extract predictor with varimp >= threshold
         int newIndex = relNames.indexOf(_all_predictor_names[index]);
         _relevance[index] = (double) varImp.get(newIndex, 1);
-        distanceFromCorner[index] = _relevance[index]*_relevance[index]+_cmi[index]*_cmi[index];
+        _admissible_index[index] = CORNER_DISTANCE - 
+                Math.sqrt(_relevance[index]*_relevance[index]+_cmi[index]*_cmi[index]);
+        _admissible[index] = (_relevance[index] >= relThreshold && _cmi[index] >= cmiThreshold) ? 1 : 0;
       }
       int[] indices = IntStream.range(0, cmi.length).toArray();
-      sort(indices, distanceFromCorner, -1, -1);
+      sort(indices, _admissible_index, -1, 1);
       sortCMIRel(indices);
     }
 
@@ -319,17 +328,23 @@ public class InfogramModel extends Model<InfogramModel, InfogramModel.InfogramPa
       double[] rel = new double[indexLength];
       double[] cmiRaw = new double[indexLength];
       double[] cmiNorm = new double[indexLength];
+      double[] distanceCorner = new double[indexLength];
       String[] predNames = new String[indexLength];
+      double[] admissible = new double[indexLength];
       for (int index = 0; index < indexLength; index++) {
         rel[index] = _relevance[indices[index]];
         cmiRaw[index] = _cmi_raw[indices[index]];
         cmiNorm[index] = _cmi[indices[index]];
         predNames[index] = _all_predictor_names[indices[index]];
+        distanceCorner[index] = _admissible_index[indices[index]];
+        admissible[index] = _admissible[indices[index]];
       }
       _relevance = rel;
       _cmi = cmiNorm;
       _cmi_raw = cmiRaw;
       _all_predictor_names = predNames;
+      _admissible_index = distanceCorner;
+      _admissible = admissible;
     }
   }
 

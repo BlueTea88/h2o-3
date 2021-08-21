@@ -376,57 +376,9 @@ h2o.infogram <- function(x,
 }
 
 
-#' @export   
-h2o.get_relevance_cmi_frame<- function(object) {
-  if( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
-    return(h2o.getFrame(object@relevance_cmi_key))
-}
-
 #' @export 
 h2o.get_admissible_attributes<-function(object) {
   if ( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
     return(object@admissible_features)
-}
-
-#' @export 
-h2o.get_admissible_relevance<-function(object) {
-  if ( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
-    return(object@admissible_relevance)
-}
-
-#' @export 
-h2o.get_admissible_cmi<-function(object) {
-  if ( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
-    return(object@admissible_cmi)
-}
-
-#' @export 
-h2o.get_admissible_cmi_raw<-function(object) {
-  if ( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
-    return(object@admissible_cmi_raw)
-}
-
-#' @export 
-h2o.get_all_predictor_relevance<-function(object) {
-  if ( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
-    return(object@relevance)
-}
-
-#' @export 
-h2o.get_all_predictor_cmi<-function(object) {
-  if ( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
-    return(object@cmi)
-}
-
-#' @export 
-h2o.get_all_predictor_cmi_raw<-function(object) {
-  if ( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
-    return(object@cmi_raw)
-}
-
-#' @export 
-h2o.get_all_predictor_names<-function(object) {
-  if ( is(object, "H2OInfogramModel") && (object@algorithm=='infogram'))
-    return(object@all_predictor_names)
 }
 

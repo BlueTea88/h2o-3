@@ -120,8 +120,7 @@ setMethod("h2o.keyof", signature(object = "Keyed"), function(object) {
   stop("`keyof` not implemented for this object type.")
 })
 
-setClass("H2OInfogramModel", slots = list(model_id='character', algorithm='character', admissible_features='character', admissible_relevance='numeric', admissible_cmi='numeric', 
-                                          admissible_cmi_raw='numeric', all_predictor_names='character', relevance='numeric', cmi='numeric', cmi_raw='numeric', relevance_cmi_key='character'))
+setClass("H2OInfogramModel", slots = list(model_id='character', algorithm='character', admissible_features='character', admissible_score = "H2OFrame"))
 
 setMethod("initialize", "H2OInfogramModel", function(.Object, model_id, ...) {
   if (!missing(model_id)) {
@@ -132,17 +131,7 @@ setMethod("initialize", "H2OInfogramModel", function(.Object, model_id, ...) {
       .Object@algorithm <- infogram_model@algorithm
       .Object@admissible_features <-
         infogram_model@model$admissible_features
-      .Object@admissible_relevance <-
-        infogram_model@model$admissible_relevance
-      .Object@admissible_cmi <- infogram_model@model$admissible_cmi
-      .Object@admissible_cmi_raw <-
-        infogram_model@model$admissible_cmi_raw
-      .Object@all_predictor_names <-
-        infogram_model@model$all_predictor_names
-      .Object@relevance <- infogram_model@model$relevance
-      .Object@cmi <- infogram_model@model$cmi
-      .Object@cmi_raw <- infogram_model@model$cmi_raw
-      .Object@relevance_cmi_key <- infogram_model@model$relevance_cmi_key
+      .Object@admissible_score <- h2o.getFrame(infogram_model@model$relevance_cmi_key)
       return(.Object)
     } else {
       stop("Input must be H2OModel with algorithm == infogram.")

@@ -176,7 +176,8 @@ public class Infogram extends ModelBuilder<InfogramModel, InfogramModel.Infogram
         _cmiRaw = new double[_numModels];
         buildInfoGramsNRelevance(); // calculate mean CMI
         _job.update(1, "finished building models for Infogram ...");
-        model._output.copyCMIRelevance(_cmiRaw, _cmi, _topKPredictors, _varImp); // copy over cmi, relevance of all predictors
+        model._output.copyCMIRelevance(_cmiRaw, _cmi, _topKPredictors, _varImp, _parms._conditional_info_threshold,
+                _parms._varimp_threshold); // copy over cmi, relevance of all predictors
         _cmi = model._output._cmi;
         _cmiRelKey = model._output.generateCMIRelFrame();
         model._output.extractAdmissibleFeatures(_varImp, model._output._all_predictor_names, _cmi, _cmiRaw,
@@ -204,13 +205,13 @@ public class Infogram extends ModelBuilder<InfogramModel, InfogramModel.Infogram
         for (int outerInd = 0; outerInd < outerLoop; outerInd++) {
           buildModelCMINRelevance(modelCount, _parms._nparallelism, lastModelInd);
           modelCount += _parms._nparallelism;
-          _job.update(_parms._nparallelism);
+          _job.update(_parms._nparallelism, "in the middle of building infogram models.");
         }
       }
       int leftOver = _numModels - modelCount;
       if (leftOver > 0) { // finish building the leftover models
         buildModelCMINRelevance(modelCount, leftOver, lastModelInd);
-        _job.update(leftOver);
+        _job.update(leftOver, " building the final set of infogram models.");
       }
       _cmi = calculateFinalCMI(_cmiRaw, _buildCore);  // scale cmi to be from 0 to 1, ignore last one
     }
