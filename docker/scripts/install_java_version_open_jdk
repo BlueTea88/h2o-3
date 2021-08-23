@@ -4,7 +4,7 @@ set -ex
 
 echo "Installing OpenJDK Java ${2}"
 
-add-apt-repository -y ppa:openjdk-r/ppa # THIS REPO IS OUTDATED, but that's ok for testing
+apt-add-repository "deb http://archive.ubuntu.com/ubuntu/ trusty main restricted universe multiverse"
 apt-get update
 apt-get install -y openjdk-${2}-jdk
 
