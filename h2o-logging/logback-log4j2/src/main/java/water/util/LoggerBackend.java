@@ -137,7 +137,7 @@ public class LoggerBackend {
 
         AppenderComponentBuilder appenderBuilder = builder.newAppender(name, "RollingFile")
                 .addAttribute("fileName", fileNameValue)
-                .addAttribute("filePattern", fileNameValue.substring(0, fileNameValue.length() - 4) + "-%i.log")
+                .addAttribute("filePattern", fileNameValue.concat(".%i"))
                 .add(thresholdFilter)
                 .addComponent(triggeringPolicy)
                 .addComponent(layoutBuilder)
