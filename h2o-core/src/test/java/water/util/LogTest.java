@@ -36,11 +36,11 @@ public class LogTest {
             
             long previousSize = -1;
             while (infoLoggingFile.length() > previousSize) {
-                assertTrue(infoLoggingFile.length() < ONE_MEGABYTE_IN_BYTES);
+                assertTrue(previousSize < ONE_MEGABYTE_IN_BYTES);
                 previousSize = infoLoggingFile.length();
                 Log.info(LOGGED_MESSAGE);
             }
-            assertEquals(0, infoLoggingFile.length()); // Freshly rotated file
+            assertTrue(infoLoggingFile.length() < 200L); // Freshly rotated file (empty for log4j, with 1st message for log4j2) 
         } finally {
             H2O.ARGS.log_dir = originalLogDir;
             Log.init(H2O.ARGS.log_level, H2O.ARGS.quiet, H2O.ARGS.max_log_file_size);
